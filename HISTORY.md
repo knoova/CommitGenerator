@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-25 17:50 | @knoova | Commit Reggaeton: caos in produzione | [v-9d0e665-1772041796126](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772041796126) | - | - |
 | 2026-02-25 17:49 | @knoova | Commit Reggaeton: caos in produzione | [v-9d0e665-1772041726408](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772041726408) | - | - |
 | 2026-02-25 17:48 | @knoova | Commit Rock: caos in produzione | [v-9d0e665-1772041665971](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772041665971) | - | - |
 | 2026-02-25 17:47 | @knoova | Commit Opera lirica: caos in produzione | [v-9d0e665-1772041617921](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772041617921) | - | - |
