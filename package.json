@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "pipeline": "concurrently -n \"NEXT,SMEE\" -c \"cyan,magenta\" \"npm run dev\" \"smee -u https://smee.io/e9IBPPORHCOqlk0 -t http://localhost:3000/api/github\"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
