@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-25 19:29 | @knoova | Join Team Mayhem | [v-9d0e665-1772047686175](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772047686175) | [YouTube](https://youtu.be/nKUFb4_tbRk) | - |
 | 2026-02-25 19:28 | @knoova | Join la squadra! | [v-9d0e665-1772047571027](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772047571027) | [YouTube](https://youtu.be/l9u5WHsf-mk) | - |
 | 2026-02-25 19:27 | @knoova | Join-Team Panic | [v-9d0e665-1772047549657](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772047549657) | [YouTube](https://youtu.be/RodMnAIoutk) | - |
 | 2026-02-25 19:27 | @knoova | Join Team Reggaeton | [v-9d0e665-1772047528568](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772047528568) | [YouTube](https://youtu.be/TMAQQPat-mY) | - |
