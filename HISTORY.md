@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-25 19:26 | @knoova | Join Team Blues | [v-9d0e665-1772047484643](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772047484643) | [YouTube](https://youtu.be/fSITtPcT4QI) | - |
 | 2026-02-25 19:24 | @knoova | Join Team Oopsie | [v-9d0e665-1772047380108](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772047380108) | [YouTube](https://youtu.be/OQziQ_rwQtM) | - |
 | 2026-02-25 19:23 | @knoova | Join Team Fix (Reggaeton Idiota) | [v-9d0e665-1772047362323](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772047362323) | [YouTube](https://youtu.be/OPGg6gqkbVU) | - |
 | 2026-02-25 19:23 | @knoova | Join Team Fiasco | [v-9d0e665-1772047321792](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772047321792) | [YouTube](https://youtu.be/6srBWpo4t2w) | - |
