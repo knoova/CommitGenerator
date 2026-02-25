@@ -1,0 +1,10 @@
+# Video History
+
+| Data | Autore | Titolo | Release | YouTube | Facebook |
+|------|--------|--------|---------|---------|----------|
+| 2026-02-25 17:44 | @knoova | Commit Rock: caos in produzione | [v-9d0e665-1772041445608](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772041445608) | - | - |
+| 2026-02-25 17:43 | @knoova | Commit Death Metal: caos in produzione | [v-9d0e665-1772041401234](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772041401234) | - | - |
+| 2026-02-25 17:42 | @knoova | Commit Death Metal: caos in produzione | [v-9d0e665-1772041342728](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772041342728) | - | - |
+| 2026-02-25 17:41 | @knoova | Commit Rock: caos in produzione | [v-9d0e665](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665) | - | - |
+| 2026-02-25 17:38 | @octocat | Commit Reggaeton: caos in produzione | [v-aaa1111](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-aaa1111) | - | - |
+| 2026-02-25 17:19 | @octocat | Commit Pop: caos in produzione | [v-fff9999](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-fff9999) | - | - |
