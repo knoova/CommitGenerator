@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-25 17:47 | @knoova | Commit Opera lirica: caos in produzione | [v-9d0e665-1772041617921](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772041617921) | - | - |
 | 2026-02-25 17:44 | @knoova | Commit Rock: caos in produzione | [v-9d0e665-1772041445608](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772041445608) | - | - |
 | 2026-02-25 17:43 | @knoova | Commit Death Metal: caos in produzione | [v-9d0e665-1772041401234](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772041401234) | - | - |
 | 2026-02-25 17:42 | @knoova | Commit Death Metal: caos in produzione | [v-9d0e665-1772041342728](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772041342728) | - | - |
