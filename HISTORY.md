@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-25 19:08 | @knoova | Join-Team Page Blues | [v-9d0e665-1772046489090](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772046489090) | - | - |
 | 2026-02-25 19:07 | @knoova | Join Team Page Calamity | [v-9d0e665-1772046419179](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772046419179) | - | - |
 | 2026-02-25 19:06 | @knoova | Join Team Doom | [v-9d0e665-1772046362868](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772046362868) | - | - |
 | 2026-02-25 19:05 | @knoova | Join-Team-Error Rock Anthem | [v-9d0e665-1772046281546](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772046281546) | - | - |
