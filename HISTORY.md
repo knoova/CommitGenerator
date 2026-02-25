@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-25 19:23 | @knoova | Join Team Fix (Reggaeton Idiota) | [v-9d0e665-1772047362323](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772047362323) | [YouTube](https://youtu.be/OPGg6gqkbVU) | - |
 | 2026-02-25 19:23 | @knoova | Join Team Fiasco | [v-9d0e665-1772047321792](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772047321792) | [YouTube](https://youtu.be/6srBWpo4t2w) | - |
 | 2026-02-25 19:21 | @knoova | Join Team Bunga Bunga | [v-9d0e665-1772047228870](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772047228870) | [YouTube](https://youtu.be/-PzXBPoPkS4) | - |
 | 2026-02-25 19:19 | @knoova | Join Team Patch | [v-9d0e665-1772047163876](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772047163876) | - | - |
