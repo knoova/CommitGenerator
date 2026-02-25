@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-25 19:11 | @knoova | Join Team Fix | [v-9d0e665-1772046628136](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772046628136) | - | - |
 | 2026-02-25 19:09 | @knoova | Join Team Bugfix Apocalypse | [v-9d0e665-1772046540629](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772046540629) | - | - |
 | 2026-02-25 19:08 | @knoova | Join-Team Page Blues | [v-9d0e665-1772046489090](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772046489090) | - | - |
 | 2026-02-25 19:07 | @knoova | Join Team Page Calamity | [v-9d0e665-1772046419179](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772046419179) | - | - |
