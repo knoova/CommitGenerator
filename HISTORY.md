@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-25 19:40 | @knoova | Join Team Epic Fail | [v-9d0e665-1772048346408](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772048346408) | - | - |
 | 2026-02-25 19:38 | @knoova | Join-Team Fiesta | [v-9d0e665-1772048236852](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772048236852) | - | - |
 | 2026-02-25 19:38 | @knoova | Join Team Fix | [v-9d0e665-1772048166911](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772048166911) | - | - |
 | 2026-02-25 19:37 | @knoova | Join Team Bug Annihilation | [v-9d0e665-1772048140942](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772048140942) | - | - |
