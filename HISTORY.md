@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-26 10:43 | @knoova | Join Team Calamity | [v-9d0e665-1772102578701](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772102578701) | - | - |
 | 2026-02-26 10:42 | @knoova | Join-Team Caliente | [v-9d0e665-1772102506969](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772102506969) | - | - |
 | 2026-02-26 10:40 | @knoova | Join Team Apocalypse | [v-9d0e665-1772102431756](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772102431756) | - | - |
 | 2026-02-26 10:37 | @knoova | Join Team Fiasco! | [v-9d0e665-1772102230126](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772102230126) | - | - |
