@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-26 10:30 | @knoova | Join-Team Page Debacle | [v-9d0e665-1772101775542](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101775542) | - | - |
 | 2026-02-26 10:28 | @knoova | Join Team (Rock) | [v-9d0e665-1772101680902](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101680902) | - | - |
 | 2026-02-26 10:27 | @knoova | Join Team (Rock Edition) | [v-9d0e665-1772101619059](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101619059) | - | - |
 | 2026-02-26 10:25 | @knoova | Join Team Fix | [v-9d0e665-1772101501333](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101501333) | - | - |
