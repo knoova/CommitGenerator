@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-26 14:45 | @knoova | Join Team Reggaeton Fix | [v-9d0e665-1772117079419](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772117079419) | - | - |
 | 2026-02-26 14:26 | @knoova | Aggiunta Membri Team | [v-2e06a21](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-2e06a21) | - | - |
 | 2026-02-26 10:45 | @knoova | Join Team Blues | [v-9d0e665-1772102667412](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772102667412) | - | - |
 | 2026-02-26 10:43 | @knoova | Join Team Calamity | [v-9d0e665-1772102578701](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772102578701) | - | - |
