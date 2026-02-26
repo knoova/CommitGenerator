@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-26 10:36 | @knoova | Join Team Oopsie | [v-9d0e665-1772102144388](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772102144388) | - | - |
 | 2026-02-26 10:34 | @knoova | Join the Team Blues | [v-9d0e665-1772102061938](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772102061938) | - | - |
 | 2026-02-26 10:33 | @knoova | Join Team Blues | [v-9d0e665-1772102003987](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772102003987) | - | - |
 | 2026-02-26 10:32 | @knoova | Join Team Fiasco | [v-9d0e665-1772101943046](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101943046) | - | - |
