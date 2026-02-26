@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-26 10:16 | @cursoragent | API Divina | [v-e4b2582](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e4b2582) | - | - |
 | 2026-02-25 19:41 | @knoova | Join The Team (Death Fix) | [v-9d0e665-1772048465048](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772048465048) | - | - |
 | 2026-02-25 19:40 | @knoova | Join Team Fiesta | [v-9d0e665-1772048349451](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772048349451) | - | - |
 | 2026-02-25 19:40 | @knoova | Join Team Epic Fail | [v-9d0e665-1772048346408](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772048346408) | - | - |
