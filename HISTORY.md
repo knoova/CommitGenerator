@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-26 10:21 | @knoova | Join Team Oopsie | [v-9d0e665-1772101233319](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101233319) | - | - |
 | 2026-02-26 10:19 | @knoova | Join Team Fail (Death) | [v-9d0e665-1772101093290](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101093290) | - | - |
 | 2026-02-26 10:17 | @knoova | Ajoin-team-gate! | [v-9d0e665-1772101034462](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101034462) | - | - |
 | 2026-02-26 10:16 | @cursoragent | API Divina | [v-e4b2582](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e4b2582) | - | - |
