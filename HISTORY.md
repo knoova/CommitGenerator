@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-26 10:32 | @knoova | Join Team Fiasco | [v-9d0e665-1772101943046](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101943046) | - | - |
 | 2026-02-26 10:31 | @knoova | Join-Team Abyss | [v-9d0e665-1772101855004](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101855004) | - | - |
 | 2026-02-26 10:30 | @knoova | Join-Team Page Debacle | [v-9d0e665-1772101775542](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101775542) | - | - |
 | 2026-02-26 10:28 | @knoova | Join Team (Rock) | [v-9d0e665-1772101680902](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101680902) | - | - |
