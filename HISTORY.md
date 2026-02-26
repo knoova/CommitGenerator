@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-26 10:24 | @knoova | Join Team Reggaeton Fix | [v-9d0e665-1772101399642](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101399642) | - | - |
 | 2026-02-26 10:22 | @knoova | Join Team Oopsie | [v-9d0e665-1772101311655](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101311655) | - | - |
 | 2026-02-26 10:21 | @knoova | Join Team Oopsie | [v-9d0e665-1772101233319](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101233319) | - | - |
 | 2026-02-26 10:19 | @knoova | Join Team Fail (Death) | [v-9d0e665-1772101093290](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772101093290) | - | - |
