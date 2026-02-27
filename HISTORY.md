@@ -2,6 +2,9 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-27 15:11 | @knoova | Build Fix Blues | [v-e1f890a-1772204956314](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772204956314) | [YouTube](https://youtu.be/PXxY51HY8mg) | - |
+| 2026-02-27 15:04 | @knoova | Build Apocalipse Fixed | [v-e1f890a](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a) | [YouTube](https://youtu.be/xnXzIgwrLpI) | - |
+| 2026-02-27 14:58 | @knoova | Page.tsx Anthem | [v-6e28775](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-6e28775) | [YouTube](https://youtu.be/zs1z88R1RkE) | - |
 | 2026-02-26 14:45 | @knoova | Join Team Reggaeton Fix | [v-9d0e665-1772117079419](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772117079419) | - | - |
 | 2026-02-26 14:26 | @knoova | Aggiunta Membri Team | [v-2e06a21](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-2e06a21) | - | - |
 | 2026-02-26 10:45 | @knoova | Join Team Blues | [v-9d0e665-1772102667412](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-9d0e665-1772102667412) | - | - |
