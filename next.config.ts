@@ -17,19 +17,6 @@ const nextConfig: NextConfig = {
         winax: path.resolve(__dirname, "scripts/winax-stub.js"),
       };
     }
-    
-    // Handle node: protocol imports
-    config.module = {
-      ...config.module,
-      parser: {
-        ...config.module?.parser,
-        javascript: {
-          ...config.module?.parser?.javascript,
-          importExportsPresence: 'error',
-        },
-      },
-    };
-    
     return config;
   },
   experimental: {
