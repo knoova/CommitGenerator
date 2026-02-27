@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-27 15:15 | @knoova | Build Fix Ballad | [v-e1f890a-1772205245777](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772205245777) | [YouTube](https://youtu.be/JJ5jS8e-CkA) | - |
 | 2026-02-27 15:11 | @knoova | Build Fix Blues | [v-e1f890a-1772204956314](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772204956314) | [YouTube](https://youtu.be/PXxY51HY8mg) | - |
 | 2026-02-27 15:04 | @knoova | Build Apocalipse Fixed | [v-e1f890a](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a) | [YouTube](https://youtu.be/xnXzIgwrLpI) | - |
 | 2026-02-27 14:58 | @knoova | Page.tsx Anthem | [v-6e28775](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-6e28775) | [YouTube](https://youtu.be/zs1z88R1RkE) | - |
