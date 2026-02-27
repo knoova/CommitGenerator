@@ -1,8 +1,9 @@
-import fs from "node:fs";
-import fsPromises from "node:fs/promises";
-import path from "node:path";
-import http from "node:http";
-import { URL } from "node:url";
+"use server";
+import fs from "fs";
+import fsPromises from "fs/promises";
+import path from "path";
+import http from "http";
+import { URL } from "url";
 import { google } from "googleapis";
 import { config } from "@/config";
 
@@ -53,7 +54,7 @@ const getAuthCodeViaLocalServer = (authUrl: string): Promise<string> => {
     });
     server.listen(REDIRECT_PORT, () => {
       console.log(`YouTube OAuth: apri nel browser -> ${authUrl}`);
-      import("node:child_process").then(({ exec }) => {
+      import("child_process").then(({ exec }) => {
         exec(`open "${authUrl}"`);
       }).catch(() => { /* manual open */ });
     });
@@ -89,6 +90,17 @@ const getAuthorizedClient = async () => {
   return oauth2;
 };
 
+function sanitizeForYouTube(text: string): string {
+  if (!text || typeof text !== "string") return "";
+  return text
+    .replace(/<[^>]*>/g, "")
+    .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/g, "")
+    .replace(/[<>]/g, (c) => (c === "<" ? "(" : ")"))
+    .replace(/[^\S\n]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export const uploadToYouTube = async (params: {
   videoPath: string;
   title: string;
@@ -99,12 +111,17 @@ export const uploadToYouTube = async (params: {
 
   const privacy = config.YOUTUBE_PRIVACY || "unlisted";
 
+  const safeTitle =
+    sanitizeForYouTube(params.title).slice(0, 100) || "Untitled";
+  const safeDescription =
+    sanitizeForYouTube(params.description).slice(0, 5000) || "";
+
   const res = await youtube.videos.insert({
     part: ["snippet", "status"],
     requestBody: {
       snippet: {
-        title: params.title.slice(0, 100),
-        description: params.description.slice(0, 5000),
+        title: safeTitle,
+        description: safeDescription,
         categoryId: "22",
       },
       status: {

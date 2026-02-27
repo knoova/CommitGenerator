@@ -7,7 +7,7 @@ const boolString = z
 
 const envSchema = z.object({
   GITHUB_WEBHOOK_SECRET: z.string().min(1).default("dev-secret"),
-  GEMINI_API_KEY: z.string().optional(),
+  OLLAMA_HOST: z.string().optional(),
   GITHUB_REPO: z.string().default("owner/repo-name"),
   MY_FACE_URL: z.string().default("/my_face.png"),
   COMPANY_LOGO_URL: z.string().default("/company_logo.png"),
@@ -37,6 +37,8 @@ export const config = {
     width: 1080,
     height: 1920,
     fps: 30,
-    durationInFrames: 300,
+    durationInFrames: 540,
+    introDurationInFrames: 120,
+    outroDurationInFrames: 120,
   },
 } as const;

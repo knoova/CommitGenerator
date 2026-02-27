@@ -32,19 +32,22 @@ const getLineStyle = (genre: Genre, frameOffset: number, active: boolean) => {
 export const KaraokeText = ({
   text,
   genre,
+  durationInFrames,
 }: {
   text: string;
   genre: Genre;
+  durationInFrames?: number;
 }) => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
+  const { durationInFrames: videoDuration } = useVideoConfig();
+  const effectiveDuration = durationInFrames ?? videoDuration;
 
   const lines = text
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean);
 
-  const segment = Math.max(20, Math.floor(durationInFrames / Math.max(lines.length, 1)));
+  const segment = Math.max(20, Math.floor(effectiveDuration / Math.max(lines.length, 1)));
 
   return (
     <div

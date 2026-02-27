@@ -1,6 +1,9 @@
-import { GoogleGenAI } from "@google/genai";
+import { Ollama } from "ollama";
 import { config } from "@/config";
 import { genres, type Genre } from "@/remotion/types";
+import { logError } from "@/lib/logger";
+
+const ollama = new Ollama({ host: config.OLLAMA_HOST || 'http://localhost:11434' });
 
 type LlmOutput = {
   genre: Genre;
@@ -21,74 +24,113 @@ const pickGenre = (): Genre => {
   return genres[idx] ?? "pop";
 };
 
-const fallbackLyrics = (commitMessage: string, genre: Genre): LlmOutput => ({
-  genre,
-  generatedTitle: `Commit ${genreLabel[genre]}: caos in produzione`,
-  generatedText: [
-    `Ho pushato: ${commitMessage.slice(0, 40)}`,
-    "La CI urla, il linter piange",
-    "il deploy balla sul precipizio",
-    "i bug ritornano come per magia",
-    "ma noi cantiamo, ship it via!",
-    "Produzione esplode, che allegria",
-  ].join("\n"),
-});
+const truncateToWordCount = (text: string, maxWords: number): string => {
+  const words = text.trim().split(/\s+/);
+  if (words.length <= maxWords) return text.trim();
+  return words.slice(0, maxWords).join(" ");
+};
 
-export const generateFunnyLyrics = async (commitMessage: string): Promise<LlmOutput> => {
+const throwWithLog = async (
+  commitMessage: string,
+  commitSha: string,
+  error: unknown,
+): Promise<never> => {
+  await logError({
+    caller: "generateFunnyLyrics",
+    commitSha,
+    commitMessage,
+    error,
+  });
+  throw error instanceof Error ? error : new Error(String(error));
+};
+
+export const generateFunnyLyrics = async (
+  commitMessage: string,
+  commitSha: string,
+): Promise<LlmOutput> => {
   const genre = pickGenre();
 
-  if (!config.GEMINI_API_KEY) {
-    return fallbackLyrics(commitMessage, genre);
-  }
+  const responseSchema = {
+    type: "object",
+    properties: {
+      title: {
+        type: "string",
+        description: "Titolo ironico breve della canzone",
+      },
+      lyrics: {
+        type: "string",
+        description: "Testo della canzone, esattamente 15 parole, su più righe con a capo",
+      },
+    },
+    required: ["title", "lyrics"],
+    additionalProperties: false,
+  };
 
-  const ai = new GoogleGenAI({ apiKey: config.GEMINI_API_KEY });
   const prompt = `
-Sei un autore comico musicale italiano.
-Riscrivi il commit message come canzone ${genreLabel[genre]} da 10 secondi.
-
-Vincoli:
-- Scrivi esattamente 30 parole cantabili
-- Il testo sara CANTATO da una voce: usa rime e ritmo
-- Tono: idiota, ironico, memabile
-- Mantieni un riferimento al messaggio originale
-- Evita contenuti offensivi
-
-Output JSON valido con chiavi:
+Sei un autore comico musicale italiano specializzato in canzoni su commit.
+Devi generare un JSON con esattamente questa struttura:
 {
-  "title": "titolo ironico breve",
-  "lyrics": "testo\\nsu piu righe\\ncon a capo"
+  "title": "Titolo breve della canzone",
+  "lyrics": "Testo ESATTAMENTE di 15 parole, con rime e ritmo"
 }
 
-Commit message originale:
-${commitMessage}
+Regole FERME:
+1. Il campo "lyrics" deve contenere ESATTAMENTE 15 parole (controlla)
+2. Usa solo il genere ${genreLabel[genre]} con tono ironico/memabile
+3. Ispirati INDIRETTAMENTE al commit: "${commitMessage}"
+4. Formato JSON VALIDO con doppi apici
+5. NIENTE altri campi oltre a title e lyrics
+6. Esempio di output corretto:
+{
+  "title": "Il Bug Ballabile",
+  "lyrics": "Danziamo sul codice rotto\nIl fix è quasi pronto\nMa il test fallisce ancora"
+}
+
+Ora genera il JSON richiesto:
 `.trim();
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
+    const ollamaResponse = await ollama.generate({
+      model: "llama3",
+      prompt: prompt,
+      format: "json",
+      options: {
+        temperature: 1.1,
       },
     });
+    const response = { text: ollamaResponse.response };
 
-    const text = response.text?.trim();
-    if (!text) {
-      return fallbackLyrics(commitMessage, genre);
+    const rawText = response.text?.trim();
+    if (typeof rawText !== "string" || !rawText) {
+      await throwWithLog(
+        commitMessage,
+        commitSha,
+        new Error("Ollama ha restituito risposta vuota"),
+      );
+    }
+    const textStr = rawText as string;
+
+    const parsed = JSON.parse(textStr) as { title?: string; lyrics?: string; " lyrics"?: string };
+
+    const lyrics = parsed.lyrics ?? parsed[" lyrics"];
+    if (typeof lyrics !== "string" || !lyrics.trim()) {
+      const debug = `Full response: ${textStr}`;
+      await throwWithLog(
+        commitMessage,
+        commitSha,
+        new Error(`Ollama ha restituito JSON senza campo lyrics valido. ${debug}`),
+      );
     }
 
-    const parsed = JSON.parse(text) as { title?: string; lyrics?: string };
-
-    if (!parsed.lyrics) {
-      return fallbackLyrics(commitMessage, genre);
-    }
-
+    const lyricsStr = lyrics!.trim();
+    const trimmedLyrics = truncateToWordCount(lyricsStr, 15);
     return {
       genre,
       generatedTitle: parsed.title?.trim() || `Commit ${genreLabel[genre]}`,
-      generatedText: parsed.lyrics.trim(),
+      generatedText: trimmedLyrics,
     };
-  } catch {
-    return fallbackLyrics(commitMessage, genre);
+  } catch (err) {
+    await throwWithLog(commitMessage, commitSha, err);
+    throw err instanceof Error ? err : new Error(String(err));
   }
 };

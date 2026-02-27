@@ -1,6 +1,8 @@
-import fs from "node:fs/promises";
-import os from "node:os";
-import path from "node:path";
+"use server";
+
+import fs from "fs/promises";
+import os from "os";
+import path from "path";
 import { bundle } from "@remotion/bundler";
 import { renderMedia, selectComposition } from "@remotion/renderer";
 import { config } from "@/config";
@@ -14,16 +16,30 @@ const getBundle = async (): Promise<string> => {
     cachedBundle = bundle({
       entryPoint: path.join(process.cwd(), "src", "remotion", "index.ts"),
       onProgress: () => undefined,
-      webpackOverride: (currentConfig) => ({
-        ...currentConfig,
-        resolve: {
-          ...currentConfig.resolve,
-          alias: {
-            ...(currentConfig.resolve?.alias ?? {}),
-            "@": path.join(process.cwd(), "src"),
+      webpackOverride: (currentConfig) => {
+        // Handle node: protocol imports
+        currentConfig.module = {
+          ...currentConfig.module,
+          parser: {
+            ...currentConfig.module?.parser,
+            javascript: {
+              ...currentConfig.module?.parser?.javascript,
+              importExportsPresence: 'error',
+            },
           },
-        },
-      }),
+        };
+        
+        return {
+          ...currentConfig,
+          resolve: {
+            ...currentConfig.resolve,
+            alias: {
+              ...(currentConfig.resolve?.alias ?? {}),
+              "@": path.join(process.cwd(), "src"),
+            },
+          },
+        };
+      },
     });
   }
   return cachedBundle;

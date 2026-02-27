@@ -1,5 +1,6 @@
-import fs from "node:fs/promises";
-import path from "node:path";
+"use server";
+import fs from "fs/promises";
+import path from "path";
 import { config } from "@/config";
 
 const GRAPH_API = "https://graph.facebook.com/v22.0";

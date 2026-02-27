@@ -1,7 +1,8 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
+"use server";
+import fs from "fs/promises";
+import path from "path";
+import { execFile } from "child_process";
+import { promisify } from "util";
 import { WaveFile } from "wavefile";
 import {
   type MusicgenForConditionalGeneration,
@@ -9,6 +10,7 @@ import {
   MusicgenForConditionalGeneration as MusicgenModel,
 } from "@huggingface/transformers";
 import { config } from "@/config";
+import { logError } from "@/lib/logger";
 import { generateVoice } from "@/lib/voice-gen";
 import type { Genre } from "@/remotion/types";
 
@@ -160,7 +162,7 @@ const mixAudio = async (params: {
   await execFileAsync("ffmpeg", [
     "-y",
     "-i", params.instrumentalPath,
-    "-f", "s16le", "-ar", "24000", "-ac", "1", "-i", params.voicePath,
+    "-i", params.voicePath,
     "-filter_complex",
     "[0:a]volume=0.3[m];[1:a]volume=1.0,aformat=sample_rates=44100[v];[m][v]amix=inputs=2:duration=first",
     "-t", "10",
@@ -183,35 +185,38 @@ export const generateAudio = async (params: {
   const shortSha = params.commitSha.slice(0, 7);
   const finalMp3 = path.join(tempDir, `${shortSha}.mp3`);
 
-  const [instrumentalPath, voiceResult] = await Promise.all([
-    generateInstrumental({
-      genre: params.genre,
-      commitMessage: params.commitMessage,
-      shortSha,
-      tempDir,
-    }),
-    generateVoice({
+  const instrumentalPath = await generateInstrumental({
+    genre: params.genre,
+    commitMessage: params.commitMessage,
+    shortSha,
+    tempDir,
+  });
+
+  let voiceResult: { voicePath: string };
+  try {
+    voiceResult = await generateVoice({
       lyrics: params.lyrics,
       genre: params.genre,
       commitSha: params.commitSha,
-    }).catch((err) => {
-      console.warn("[audio-gen] Voice generation failed, using instrumental only:", err instanceof Error ? err.message : err);
-      return null;
-    }),
-  ]);
-
-  if (voiceResult) {
-    await mixAudio({
-      instrumentalPath,
-      voicePath: voiceResult.voicePath,
-      outputPath: finalMp3,
     });
+  } catch (err) {
+    await logError({
+      caller: "generateVoice",
+      commitSha: params.commitSha,
+      commitMessage: params.commitMessage,
+      error: err,
+    });
+    throw err instanceof Error ? err : new Error(String(err));
+  }
 
-    for (const tmp of [instrumentalPath, voiceResult.voicePath]) {
-      try { await fs.unlink(tmp); } catch { /* ignore */ }
-    }
-  } else {
-    await fs.rename(instrumentalPath, finalMp3);
+  await mixAudio({
+    instrumentalPath,
+    voicePath: voiceResult.voicePath,
+    outputPath: finalMp3,
+  });
+
+  for (const tmp of [instrumentalPath, voiceResult.voicePath]) {
+    try { await fs.unlink(tmp); } catch { /* ignore */ }
   }
 
   console.log(`[audio-gen] Final audio: ${finalMp3}`);

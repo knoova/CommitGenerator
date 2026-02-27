@@ -94,7 +94,7 @@ npm run dev
 Webhook endpoint:
 
 ```txt
-POST http://localhost:3000/api/github
+POST http://localhost:3001/api/github
 ```
 
 ## Esposizione webhook da locale
@@ -102,7 +102,7 @@ POST http://localhost:3000/api/github
 ### Opzione A: ngrok
 
 ```bash
-ngrok http 3000
+ngrok http 3001
 ```
 
 Prendi l'URL HTTPS generato (`https://xxxxx.ngrok-free.app`) e usalo in GitHub Webhooks:
@@ -114,7 +114,7 @@ https://xxxxx.ngrok-free.app/api/github
 ### Opzione B: Cloudflare Tunnel
 
 ```bash
-cloudflared tunnel --url http://localhost:3000
+cloudflared tunnel --url http://localhost:3001
 ```
 
 Usa l'URL pubblico fornito dal tunnel come payload URL con suffisso `/api/github`.

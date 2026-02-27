@@ -1,8 +1,13 @@
-import path from "node:path";
+"use server";
+import path from "path";
 import { config } from "@/config";
 import { generateAudio } from "@/lib/audio-gen";
 import { uploadToFacebook } from "@/lib/facebook";
 import { appendHistoryRow, pushHistoryOnly } from "@/lib/history";
+import {
+  generateDescriptionCta,
+  THINKPINK_LINKS,
+} from "@/lib/description-cta";
 import { generateFunnyLyrics } from "@/lib/llm";
 import { createGitHubRelease } from "@/lib/release";
 import { renderCommitVideo } from "@/lib/render-video";
@@ -37,7 +42,7 @@ export const processCommitPipeline = async ({
   const authorAvatarUrl = avatarUrl(payload, authorName);
   const commitMessage = commit.message.trim();
 
-  const llm = await generateFunnyLyrics(commitMessage);
+  const llm = await generateFunnyLyrics(commitMessage, commit.id);
 
   const music = await generateAudio({
     genre: llm.genre,
@@ -61,7 +66,20 @@ export const processCommitPipeline = async ({
   });
 
   const videoAbsPath = path.resolve(rendered.outputPath);
-  const videoDescription = `${llm.generatedText}\n\nCommit: ${commitMessage}\nAutore: @${authorName}`;
+
+  const linkIndex =
+    [...commit.id.slice(0, 8)].reduce((a, c) => a + c.charCodeAt(0), 0) %
+    THINKPINK_LINKS.length;
+  const target = THINKPINK_LINKS[linkIndex];
+
+  const cta = await generateDescriptionCta({
+    genre: llm.genre,
+    lyricsSnippet: llm.generatedText.slice(0, 60),
+    targetUrl: target.url,
+  });
+
+  const base = `${llm.generatedText}\n\nCommit: ${commitMessage}\nAutore: @${authorName}`;
+  const videoDescription = cta ? `${base}\n\n---\n${cta}` : base;
 
   const [releaseResult, ytResult, fbResult] = await Promise.all([
     settle("GitHub Release", () =>
