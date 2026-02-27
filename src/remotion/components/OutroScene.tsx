@@ -1,5 +1,5 @@
 import { AbsoluteFill, Img } from "remotion";
-import { THINKPINK_LINKS } from "@/lib/description-cta";
+import { THINKPINK_LINKS } from "@/lib/links";
 import { QRCodeSVG } from "qrcode.react";
 
 export const OutroScene = () => {

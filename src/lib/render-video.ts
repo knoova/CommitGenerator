@@ -17,18 +17,6 @@ const getBundle = async (): Promise<string> => {
       entryPoint: path.join(process.cwd(), "src", "remotion", "index.ts"),
       onProgress: () => undefined,
       webpackOverride: (currentConfig) => {
-        // Handle node: protocol imports
-        currentConfig.module = {
-          ...currentConfig.module,
-          parser: {
-            ...currentConfig.module?.parser,
-            javascript: {
-              ...currentConfig.module?.parser?.javascript,
-              importExportsPresence: 'error',
-            },
-          },
-        };
-        
         return {
           ...currentConfig,
           resolve: {

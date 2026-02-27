@@ -4,10 +4,8 @@ import { config } from "@/config";
 import { generateAudio } from "@/lib/audio-gen";
 import { uploadToFacebook } from "@/lib/facebook";
 import { appendHistoryRow, pushHistoryOnly } from "@/lib/history";
-import {
-  generateDescriptionCta,
-  THINKPINK_LINKS,
-} from "@/lib/description-cta";
+import { generateDescriptionCta } from "@/lib/description-cta";
+import { THINKPINK_LINKS } from "@/lib/links";
 import { generateFunnyLyrics } from "@/lib/llm";
 import { createGitHubRelease } from "@/lib/release";
 import { renderCommitVideo } from "@/lib/render-video";
