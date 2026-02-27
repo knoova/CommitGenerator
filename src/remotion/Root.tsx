@@ -1,7 +1,11 @@
 import { Composition } from "remotion";
-import { config } from "@/config";
 import { CommitKaraokeComposition } from "@/remotion/Composition";
 import type { VideoProps } from "@/remotion/types";
+
+// Inline values to keep this file browser-safe (no process.env / Node.js deps).
+// Must stay in sync with the "video" block in src/config.ts.
+const COMPOSITION_ID = "CommitKaraoke";
+const VIDEO = { width: 1080, height: 1920, fps: 30, durationInFrames: 540 } as const;
 
 const defaultProps: VideoProps = {
   commitMessage: "fix: remove haunted semicolon",
@@ -17,12 +21,12 @@ const defaultProps: VideoProps = {
 export const RemotionRoot = () => {
   return (
     <Composition
-      id={config.remotionCompositionId}
+      id={COMPOSITION_ID}
       component={CommitKaraokeComposition}
-      durationInFrames={config.video.durationInFrames}
-      fps={config.video.fps}
-      width={config.video.width}
-      height={config.video.height}
+      durationInFrames={VIDEO.durationInFrames}
+      fps={VIDEO.fps}
+      width={VIDEO.width}
+      height={VIDEO.height}
       defaultProps={defaultProps}
     />
   );

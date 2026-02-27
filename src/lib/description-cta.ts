@@ -1,21 +1,10 @@
 import { Ollama } from "ollama";
 import { config } from "@/config";
-
-const ollama = new Ollama({ host: config.OLLAMA_HOST || 'http://localhost:11434' });
 import type { Genre } from "@/remotion/types";
 
-export const THINKPINK_LINKS = [
-  { url: "https://www.thinkpinkstudio.it", label: "sito Italia" },
-  { url: "https://www.thinkpinkstudio.ug", label: "sito Uganda" },
-  {
-    url: "https://www.facebook.com/thinkpinkphoto",
-    label: "Facebook",
-  },
-  {
-    url: "https://www.linkedin.com/company/thinkpinkstudio/?viewAsMember=true",
-    label: "LinkedIn",
-  },
-] as const;
+export { THINKPINK_LINKS } from "@/lib/links";
+
+const ollama = new Ollama({ host: config.OLLAMA_HOST || 'http://localhost:11434' });
 
 const genreLabel: Record<Genre, string> = {
   rock: "Rock",
