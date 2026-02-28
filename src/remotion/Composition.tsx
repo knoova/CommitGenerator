@@ -41,7 +41,7 @@ export const CommitKaraokeComposition = (props: VideoProps) => {
         </AbsoluteFill>
       </Sequence>
       <Sequence from={420} durationInFrames={120} name="Outro">
-        <OutroScene />
+        <OutroScene variant="professional"/>
       </Sequence>
     </>
   );

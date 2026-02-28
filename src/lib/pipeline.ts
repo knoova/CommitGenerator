@@ -29,28 +29,70 @@ const settle = async <T>(label: string, fn: () => Promise<T>): Promise<SettledVa
   }
 };
 
-export const processCommitPipeline = async ({
-  payload,
-  commit,
-}: {
+// Funzione per calcolare la complessità di un commit
+const calculateCommitComplexity = (commit: GitHubCommit): number => {
+  const messageLength = commit.message.length;
+  const additions = commit.additions || 0;
+  const deletions = commit.deletions || 0;
+  const totalChanges = additions + deletions;
+  
+  // Peso diverso per diversi aspetti del commit
+  return (messageLength * 0.1) + (totalChanges * 0.01);
+};
+
+// Funzione per decidere se combinare commit
+const shouldCombineCommits = (commits: GitHubCommit[]): boolean => {
+  if (commits.length <= 1) return false;
+  
+  const avgComplexity = commits.reduce((sum, commit) => sum + calculateCommitComplexity(commit), 0) / commits.length;
+  const totalChanges = commits.reduce((sum, commit) => sum + (commit.additions || 0) + (commit.deletions || 0), 0);
+  
+  // Combina se:
+  // 1. Molti commit piccoli (< 50 righe totali)
+  // 2. Commit molto semplici (complessità media < 10)
+  // 3. Più di 3 commit nello stesso push
+  return (totalChanges < 50 && commits.length > 2) || 
+         (avgComplexity < 10 && commits.length > 3) || 
+         commits.length > 5;
+};
+
+// Funzione per combinare più commit in un unico testo
+const combineCommits = (commits: GitHubCommit[]): string => {
+  const combinedMessage = commits
+    .map((commit, index) => {
+      const additions = commit.additions || 0;
+      const deletions = commit.deletions || 0;
+      const totalChanges = additions + deletions;
+      
+      return `${index + 1}. ${commit.message} (${totalChanges} righe modificate)`;
+    })
+    .join(" | ");
+  
+  return `Oggi abbiamo lavorato su: ${combinedMessage}`;
+};
+
+// Funzione per elaborare un singolo commit o una combinazione
+const processCommitOrCombination = async (params: {
   payload: GitHubPushPayload;
   commit: GitHubCommit;
+  combinedMessage?: string;
 }) => {
-  const authorName = commitAuthor(commit, payload);
-  const authorAvatarUrl = avatarUrl(payload, authorName);
-  const commitMessage = commit.message.trim();
+  const authorName = commitAuthor(params.commit, params.payload);
+  const authorAvatarUrl = avatarUrl(params.payload, authorName);
+  const commitMessage = (params.combinedMessage || params.commit.message).trim();
 
-  const llm = await generateFunnyLyrics(commitMessage, commit.id);
+  const llm = await generateFunnyLyrics(commitMessage, params.commit.id);
 
   const music = await generateAudio({
     genre: llm.genre,
     commitMessage,
-    commitSha: commit.id,
+    commitSha: params.commit.id,
     lyrics: llm.generatedText,
+    durationSeconds: llm.genre === "opera" ? 45 : undefined, // Opera più lunga
   });
 
   const rendered = await renderCommitVideo({
-    commitSha: commit.id,
+    commitSha: params.commit.id,
     inputProps: {
       commitMessage,
       authorName,
@@ -66,7 +108,7 @@ export const processCommitPipeline = async ({
   const videoAbsPath = path.resolve(rendered.outputPath);
 
   const linkIndex =
-    [...commit.id.slice(0, 8)].reduce((a, c) => a + c.charCodeAt(0), 0) %
+    [...params.commit.id.slice(0, 8)].reduce((a, c) => a + c.charCodeAt(0), 0) %
     THINKPINK_LINKS.length;
   const target = THINKPINK_LINKS[linkIndex];
 
@@ -82,13 +124,13 @@ export const processCommitPipeline = async ({
   const [releaseResult, ytResult, fbResult] = await Promise.all([
     settle("GitHub Release", () =>
       createGitHubRelease({
-        commitSha: commit.id,
+        commitSha: params.commit.id,
         commitMessage,
         generatedTitle: llm.generatedTitle,
         generatedText: llm.generatedText,
         authorName,
         authorAvatarUrl,
-        repoFullName: payload.repository.full_name || config.GITHUB_REPO,
+        repoFullName: params.payload.repository.full_name || config.GITHUB_REPO,
         videoPath: videoAbsPath,
       }),
     ),
@@ -115,20 +157,20 @@ export const processCommitPipeline = async ({
   ]);
 
   const releaseUrl = releaseResult.ok ? releaseResult.value.releaseUrl : "";
-  const tagName = releaseResult.ok ? releaseResult.value.tagName : `v-${commit.id.slice(0, 7)}`;
+  const tagName = releaseResult.ok ? releaseResult.value.tagName : `v-${params.commit.id.slice(0, 7)}`;
   const youtubeUrl = ytResult.ok ? ytResult.value.youtubeUrl : undefined;
   const facebookUrl = fbResult.ok ? fbResult.value.facebookUrl : undefined;
 
   if (releaseResult.ok && (youtubeUrl || facebookUrl)) {
     await settle("Release update with social links", () =>
       createGitHubRelease({
-        commitSha: commit.id,
+        commitSha: params.commit.id,
         commitMessage,
         generatedTitle: llm.generatedTitle,
         generatedText: llm.generatedText,
         authorName,
         authorAvatarUrl,
-        repoFullName: payload.repository.full_name || config.GITHUB_REPO,
+        repoFullName: params.payload.repository.full_name || config.GITHUB_REPO,
         videoPath: videoAbsPath,
         youtubeUrl,
         facebookUrl,
@@ -155,4 +197,32 @@ export const processCommitPipeline = async ({
     facebookUrl,
     videoPath: rendered.outputPath,
   };
+};
+
+export const processCommitPipeline = async ({
+  payload,
+  commit,
+}: {
+  payload: GitHubPushPayload;
+  commit: GitHubCommit;
+}) => {
+  // Verifica se ci sono più commit da combinare
+  const allCommits = payload.commits || [commit];
+  
+  if (shouldCombineCommits(allCommits)) {
+    console.log(`[pipeline] Combining ${allCommits.length} commits into one video`);
+    const combinedMessage = combineCommits(allCommits);
+    
+    return await processCommitOrCombination({
+      payload,
+      commit: allCommits[0], // Usa il primo commit come riferimento
+      combinedMessage,
+    });
+  } else {
+    // Processa commit singolo
+    return await processCommitOrCombination({
+      payload,
+      commit,
+    });
+  }
 };

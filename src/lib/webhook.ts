@@ -5,6 +5,8 @@ export type GitHubCommit = {
   message: string;
   timestamp?: string;
   url?: string;
+  additions?: number;
+  deletions?: number;
   author: {
     name: string;
     username?: string;
