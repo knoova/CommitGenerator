@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-28 00:34 | @knoova | Errori Invisibili | [v-e1f890a-1772238800006](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772238800006) | - | - |
 | 2026-02-28 00:18 | @knoova | Build It Up, Break It Down | [v-e1f890a-1772237863489](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772237863489) | - | - |
 | 2026-02-27 23:31 | @knoova | The Build Break Dance | [v-e1f890a-1772234955438](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772234955438) | [YouTube](https://youtu.be/iigywuXVUjw) | - |
 | 2026-02-27 15:15 | @knoova | Build Fix Ballad | [v-e1f890a-1772205245777](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772205245777) | [YouTube](https://youtu.be/JJ5jS8e-CkA) | - |
