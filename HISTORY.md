@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-02-28 17:07 | @knoova | The Build Breaker | [v-e1f890a-1772298428675](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772298428675) | - | - |
 | 2026-02-28 08:44 | @knoova | Il Fix Rottame | [v-e1f890a-1772268242842](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772268242842) | - | - |
 | 2026-02-28 07:43 | @knoova | Cronaca di un Build | [v-e1f890a-1772264551816](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772264551816) | - | - |
 | 2026-02-28 00:40 | @knoova | Fixa-Tic-Tac | [v-e1f890a-1772239173682](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772239173682) | - | - |
