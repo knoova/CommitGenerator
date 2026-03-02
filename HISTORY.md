@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-03-02 13:50 | @knoova | Code Crusade | [v-e1f890a-1772459346641](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772459346641) | - | - |
 | 2026-03-02 13:27 | @knoova | Commit di Ordine | [v-e1f890a-1772457969696](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772457969696) | - | - |
 | 2026-02-28 17:07 | @knoova | The Build Breaker | [v-e1f890a-1772298428675](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772298428675) | - | - |
 | 2026-02-28 08:44 | @knoova | Il Fix Rottame | [v-e1f890a-1772268242842](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772268242842) | - | - |
