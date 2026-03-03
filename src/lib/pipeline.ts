@@ -7,7 +7,7 @@ import { appendHistoryRow, pushHistoryOnly } from "@/lib/history";
 import { generateDescriptionCta } from "@/lib/description-cta";
 import { THINKPINK_LINKS } from "@/lib/links";
 import { generateFunnyLyrics } from "@/lib/llm";
-import { createGitHubRelease } from "@/lib/release";
+import { createGitHubRelease, updateGitHubReleaseWithSocialLinks } from "@/lib/release";
 import { renderCommitVideo } from "@/lib/render-video";
 import { uploadToYouTube } from "@/lib/youtube";
 import type { GitHubCommit, GitHubPushPayload } from "@/lib/webhook";
@@ -163,10 +163,10 @@ const processCommitOrCombination = async (params: {
 
   if (releaseResult.ok && (youtubeUrl || facebookUrl)) {
     await settle("Release update with social links", () =>
-      createGitHubRelease({
+      updateGitHubReleaseWithSocialLinks(tagName, params.payload.repository.full_name || config.GITHUB_REPO, {
         commitSha: params.commit.id,
         commitMessage,
-        generatedTitle: llm.generatedTitle,
+        generatedTitle: llm.generatedTitle ?? "",
         generatedText: llm.generatedText,
         authorName,
         authorAvatarUrl,

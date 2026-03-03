@@ -16,9 +16,9 @@ export async function POST(request: Request) {
   const signature = request.headers.get("x-hub-signature-256");
   const event = request.headers.get("x-github-event");
 
-  // Temporarily bypass signature verification for testing
   if (
-    false && !verifyGitHubSignature({
+    !config.SKIP_WEBHOOK_VERIFY &&
+    !verifyGitHubSignature({
       body,
       signature,
       secret: config.GITHUB_WEBHOOK_SECRET,

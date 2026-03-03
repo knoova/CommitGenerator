@@ -7,6 +7,7 @@ const boolString = z
 
 const envSchema = z.object({
   GITHUB_WEBHOOK_SECRET: z.string().min(1).default("dev-secret"),
+  SKIP_WEBHOOK_VERIFY: boolString,
   OLLAMA_HOST: z.string().optional(),
   GITHUB_REPO: z.string().default("owner/repo-name"),
   MY_FACE_URL: z.string().default("/my_face.png"),

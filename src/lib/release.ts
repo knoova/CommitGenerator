@@ -70,6 +70,24 @@ const createRelease = async (args: {
   };
 };
 
+/** Updates an existing release's notes (e.g. to add YouTube/Facebook links). Use after createGitHubRelease when social uploads complete. */
+export const updateGitHubReleaseWithSocialLinks = async (
+  tagName: string,
+  repoFullName: string,
+  params: ReleaseParams,
+): Promise<void> => {
+  const notes = buildReleaseBody(params);
+  await execFileAsync("gh", [
+    "release",
+    "edit",
+    tagName,
+    "--notes",
+    notes,
+    "--repo",
+    repoFullName,
+  ]);
+};
+
 export const createGitHubRelease = async (params: ReleaseParams): Promise<{
   tagName: string;
   releaseUrl: string;
