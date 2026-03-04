@@ -59,7 +59,7 @@ export const generateFunnyLyrics = async (
       },
       lyrics: {
         type: "string",
-        description: "Testo della canzone, esattamente 15 parole, su più righe con a capo",
+        description: "Testo della canzone, esattamente 45 parole, su più righe con a capo",
       },
     },
     required: ["title", "lyrics"],
@@ -71,11 +71,11 @@ Sei un autore comico musicale italiano specializzato in canzoni su commit.
 Devi generare un JSON con esattamente questa struttura:
 {
   "title": "Titolo breve della canzone",
-  "lyrics": "Testo ESATTAMENTE di 15 parole, con rime e ritmo"
+  "lyrics": "Testo ESATTAMENTE di 38 parole, con rime e ritmo"
 }
 
 Regole FERME:
-1. Il campo "lyrics" deve contenere ESATTAMENTE 15 parole (controlla)
+1. Il campo "lyrics" deve contenere ESATTAMENTE 38 parole (controlla)
 2. Usa solo il genere ${genreLabel[genre]} con tono ironico/memabile
 3. Ispirati INDIRETTAMENTE al commit: "${commitMessage}"
 4. Formato JSON VALIDO con doppi apici
@@ -123,7 +123,7 @@ Ora genera il JSON richiesto:
     }
 
     const lyricsStr = lyrics!.trim();
-    const trimmedLyrics = truncateToWordCount(lyricsStr, 15);
+    const trimmedLyrics = truncateToWordCount(lyricsStr, 45);
     return {
       genre,
       generatedTitle: parsed.title?.trim() || `Commit ${genreLabel[genre]}`,

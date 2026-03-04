@@ -73,7 +73,7 @@ const generateSungVoice = async (params: {
   await execFileAsync("ffmpeg", [
     "-y",
     "-i", baseVoicePath,
-    "-af", "chorus=0.7:0.9:55:0.4:0.25:2, flanger=delay=10:depth=5:regen=30:width=71:speed=0.5:shape=sin, aecho=0.8:0.9:1000:0.3",
+    "-af", "chorus=0.7:0.9:55:0.4:0.25:2, flanger=delay=10:depth=5:regen=30:width=71:speed=0.5:shape=triangular, aecho=0.8:0.9:1000:0.3",
     sungVoicePath,
   ]);
 

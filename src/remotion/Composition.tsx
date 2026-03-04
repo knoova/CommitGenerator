@@ -16,11 +16,12 @@ export const CommitKaraokeComposition = (props: VideoProps) => {
   const logoSource = resolveAsset(props.companyLogoUrl);
   const faceSource = resolveAsset(props.myFaceUrl);
   const avatarSource = resolveAsset(props.authorAvatarUrl);
+  const bannerUrl = resolveAsset(props.bannerUrl);
 
   return (
     <>
       <Sequence durationInFrames={120} name="Intro">
-        <IntroScene companyLogoUrl={logoSource} myFaceUrl={faceSource} />
+        <IntroScene companyLogoUrl={logoSource} myFaceUrl={faceSource} bannerUrl={bannerUrl} />
       </Sequence>
       <Sequence from={120} durationInFrames={300} name="Main">
         <AbsoluteFill>

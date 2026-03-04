@@ -10,5 +10,6 @@ export type VideoProps = {
   genre: Genre;
   myFaceUrl: string;
   companyLogoUrl: string;
+  bannerUrl: string;
   audioUrl: string;
 };

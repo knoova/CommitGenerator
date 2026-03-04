@@ -1,485 +1,253 @@
-import { AbsoluteFill, Img, interpolate, Sequence, useCurrentFrame, useVideoConfig } from "remotion";
-import { THINKPINK_LINKS } from "@/lib/links";
-import { QRCodeSVG } from "qrcode.react";
+import { AbsoluteFill, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { config } from "@/config";
 
-interface OutroSceneProps {
-  variant?: 'professional' | 'minimal' | 'clean';
-}
+type OutroSceneProps = {
+  variant?: "professional" | "minimal" | "clean";
+};
 
-// Professional Business Card variant - MIGLIORATO
-const ProfessionalOutro = () => {
+
+const resolveAsset = (url: string) =>
+  url.startsWith("http") ? url : staticFile(url.replace(/^\//, "")); 
+
+export const OutroScene = ({ variant = "professional" }: OutroSceneProps) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
+  const opacity = interpolate(frame, [0, fps * 0.5, fps * 1.5, fps * 2], [0, 1, 1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  const scale = interpolate(frame, [0, fps * 0.5], [0.8, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  const getStyles = () => {
+    switch (variant) {
+      case "minimal":
+        return {
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          textColor: "#ffffff",
+          accentColor: "#ffffff",
+        };
+      case "clean":
+        return {
+          background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+          textColor: "#ffffff",
+          accentColor: "#ffffff",
+        };
+      default:
+        return {
+          background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+          textColor: "#ffffff",
+          accentColor: "#ffffff",
+        };
+    }
+  };
+
+  const styles = getStyles();
+
   return (
-    <AbsoluteFill style={{
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 40
-    }}>
-          {/* Titolo principale */}
-          <Sequence from={0} durationInFrames={60}>
-        <div style={{
-          opacity: interpolate(frame, [0, 30], [0, 1], { extrapolateLeft: 'clamp' }),
-          transform: `translateY(${interpolate(frame, [0, 30], [20, 0], { extrapolateLeft: 'clamp' })}px)`
-        }}>
-          <h1 style={{
+    <AbsoluteFill
+      style={{
+        opacity,
+        transform: `scale(${scale})`,
+        background: styles.background,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 30,
+          padding: "40px 60px",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: 24,
+          backdropFilter: "blur(20px)",
+          border: "2px solid rgba(255, 255, 255, 0.3)",
+          textAlign: "center",
+          maxWidth: "80%",
+        }}
+      >
+        <h2
+          style={{
+            margin: 0,
             fontSize: 48,
-            color: '#ffffff',
-            fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-            fontWeight: 700,
-            margin: 0,
-            textAlign: 'center',
-            textShadow: '0 4px 6px rgba(0, 0, 0, 0.3)'
-          }}>
-            CONTATTACI ORA
-          </h1>
-          <p style={{
-            fontSize: 20,
-            color: 'rgba(255, 255, 255, 0.9)',
-            fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-            margin: '10px 0 0 0',
-            textAlign: 'center'
-          }}>
-            Scansiona il QR Code o visita i nostri siti
-          </p>
-        </div>
-      </Sequence>
+            fontWeight: "bold",
+            color: styles.textColor,
+            textShadow: "3px 3px 6px rgba(0,0,0,0.4)",
+            lineHeight: 1.2,
+          }}
+        >
+          GRAZIE PER AVER
+          <br />
+          SOPPORTATO
+          <br />
+          QUESTO COMMIT!
+        </h2>
 
-          {/* Contatti principali - URL completi */}
-          <Sequence from={60}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 24,
-          marginTop: 40,
-          width: '100%',
-          maxWidth: 600
-        }}>
-          {THINKPINK_LINKS.map((link, index) => (
-            <div key={link.url} style={{
-              opacity: interpolate(frame - 60 - (index * 20), [0, 40], [0, 1], { extrapolateLeft: 'clamp' }),
-              transform: `translateY(${interpolate(frame - 60 - (index * 20), [0, 40], [10, 0], { extrapolateLeft: 'clamp' })}px)`
-            }}>
-              {/* Call-to-action testuale */}
-              <div style={{
-                fontSize: 20,
-                color: '#ffffff',
-                fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-                marginBottom: 8,
-                fontWeight: 600
-              }}>
-                {link.label === 'Facebook' && 'Seguici su Facebook'}
-                {link.label === 'sito Italia' && 'Visita il nostro sito'}
-                {link.label === 'sito Uganda' && 'Visit our website'}
-                {link.label === 'LinkedIn' && 'Connettiti su LinkedIn'}
-              </div>
-              
-              {/* URL completo grande e leggibile */}
-              <a 
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'block',
-                  fontSize: 24,
-                  color: '#ffffff',
-                  fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-                  textDecoration: 'none',
-                  padding: '16px 24px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                  borderRadius: '12px',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                  backdropFilter: 'blur(4px)',
-                  transition: 'all 0.3s ease',
-                  textAlign: 'center',
-                  wordBreak: 'break-all'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                {link.url}
-              </a>
-            </div>
-          ))}
-        </div>
-      </Sequence>
-
-          {/* QR Code GRANDE e visibile */}
-          <Sequence from={140}>
-        <div style={{
-          opacity: interpolate(frame - 140, [0, 60], [0, 1], { extrapolateLeft: 'clamp' }),
-          transform: `scale(${interpolate(frame - 140, [0, 60], [0.5, 1], { extrapolateLeft: 'clamp' })})`,
-          marginTop: 40,
-          padding: 20,
-          backgroundColor: '#ffffff',
-          borderRadius: '16px',
-          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
-        }}>
-          <QRCodeSVG
-            value="https://www.thinkpinkstudio.it" 
-            size={500}
-            bgColor="#ffffff"
-            fgColor="#667eea"
-          />
-          <div style={{
-            marginTop: 16,
-            fontSize: 18,
-            color: '#667eea',
-            fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-            fontWeight: 600,
-            textAlign: 'center'
-          }}>
-            thinkpinkstudio.it
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 20,
+            padding: "20px 40px",
+            background: "rgba(255, 255, 255, 0.15)",
+            borderRadius: 16,
+            border: "1px solid rgba(255, 255, 255, 0.3)",
+          }}
+        >
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              background: "rgba(255, 255, 255, 0.2)",
+              borderRadius: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "2px solid rgba(255, 255, 255, 0.4)",
+            }}
+          >
+            <img
+              src={resolveAsset(config.COMPANY_LOGO_URL)}
+              alt="Logo"
+              style={{
+                width: 60,
+                height: 60,
+                objectFit: "contain",
+              }}
+            />
           </div>
-        </div>
-      </Sequence>
-
-          {/* Footer con logo */}
-          <Sequence from={200}>
-        <div style={{
-          position: 'absolute',
-          bottom: 40,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 16,
-          opacity: interpolate(frame - 200, [0, 40], [0, 1], { extrapolateLeft: 'clamp' })
-        }}>
-          <div style={{
-            width: 40,
-            height: 40,
-            backgroundColor: '#ffffff',
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <span style={{ fontSize: 24, fontWeight: 'bold', color: '#667eea' }}>TP</span>
-          </div>
-          <div style={{
-            fontSize: 16,
-            color: 'rgba(255, 255, 255, 0.8)',
-            fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif'
-          }}>
-            Think Pink Studio - Web & Mobile Development
-          </div>
-        </div>
-      </Sequence>
-    </AbsoluteFill>
-  );
-};
-
-// Minimal Clean variant - MIGLIORATO
-const MinimalOutro = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  return (
-    <AbsoluteFill style={{
-      background: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 40
-    }}>
-          {/* Titolo */}
-          <Sequence from={0} durationInFrames={40}>
-        <div style={{
-          opacity: interpolate(frame, [0, 30], [0, 1], { extrapolateLeft: 'clamp' }),
-          transform: `translateY(${interpolate(frame, [0, 30], [20, 0], { extrapolateLeft: 'clamp' })}px)`
-        }}>
-          <h1 style={{
-            fontSize: 42,
-            color: '#333333',
-            fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-            fontWeight: 700,
-            margin: 0,
-            textAlign: 'center'
-          }}>
-            CONTATTI
-          </h1>
-          <p style={{
-            fontSize: 18,
-            color: '#666666',
-            fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-            margin: '8px 0 0 0',
-            textAlign: 'center'
-          }}>
-            Restiamo in contatto
-          </p>
-        </div>
-      </Sequence>
-
-          {/* Contatti con URL completi */}
-          <Sequence from={40}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 20,
-          marginTop: 30,
-          width: '100%',
-          maxWidth: 500
-        }}>
-          {THINKPINK_LINKS.map((link, index) => (
-            <div key={link.url} style={{
-              opacity: interpolate(frame - 40 - (index * 15), [0, 30], [0, 1], { extrapolateLeft: 'clamp' }),
-              transform: `translateY(${interpolate(frame - 40 - (index * 15), [0, 30], [10, 0], { extrapolateLeft: 'clamp' })}px)`
-            }}>
-              {/* Label descrittiva */}
-              <div style={{
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: 28,
+                fontWeight: "bold",
+                color: styles.textColor,
+                textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
+              }}
+            >
+              Think Pink Studio
+            </h3>
+            <p
+              style={{
+                margin: 0,
                 fontSize: 16,
-                color: '#333333',
-                fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-                marginBottom: 6,
-                fontWeight: 600
-              }}>
-                {link.label === 'Facebook' && 'Facebook'}
-                {link.label === 'sito Italia' && 'Sito Web'}
-                {link.label === 'sito Uganda' && 'Website'}
-                {link.label === 'LinkedIn' && 'LinkedIn'}
-              </div>
-              
-              {/* URL completo */}
-              <a 
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'block',
-                  fontSize: 20,
-                  color: '#667eea',
-                  fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-                  textDecoration: 'none',
-                  padding: '12px 16px',
-                  backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(102, 126, 234, 0.2)',
-                  transition: 'all 0.3s ease',
-                  textAlign: 'center',
-                  wordBreak: 'break-all'
-                }}
-              >
-                {link.url}
-              </a>
-            </div>
-          ))}
-        </div>
-      </Sequence>
-
-          {/* QR Code grande */}
-          <Sequence from={100}>
-        <div style={{
-          opacity: interpolate(frame - 100, [0, 50], [0, 1], { extrapolateLeft: 'clamp' }),
-          transform: `scale(${interpolate(frame - 100, [0, 50], [0.5, 1], { extrapolateLeft: 'clamp' })})`,
-          marginTop: 30,
-          padding: 16,
-          backgroundColor: '#ffffff',
-          borderRadius: '12px',
-          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)'
-        }}>
-          <QRCodeSVG
-            value="https://www.thinkpinkstudio.it" 
-            size={400}
-            bgColor="#ffffff"
-            fgColor="#667eea"
-          />
-          <div style={{
-            marginTop: 12,
-            fontSize: 16,
-            color: '#667eea',
-            fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-            fontWeight: 600,
-            textAlign: 'center'
-          }}>
-            thinkpinkstudio.it
+                color: styles.textColor,
+                opacity: 0.9,
+              }}
+            >
+              Web & Mobile Development
+            </p>
           </div>
         </div>
-      </Sequence>
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+            padding: "20px 40px",
+            background: "rgba(255, 255, 255, 0.15)",
+            borderRadius: 16,
+            border: "1px solid rgba(255, 255, 255, 0.3)",
+          }}
+        >
+          <h3
+            style={{
+              margin: 0,
+              fontSize: 22,
+              fontWeight: "bold",
+              color: styles.textColor,
+            }}
+          >
+            Seguici per altri capolavori:
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <a
+              href="https://www.facebook.com/thinkpinkphoto"
+              style={{
+                color: styles.textColor,
+                textDecoration: "none",
+                fontSize: 18,
+                padding: "12px 24px",
+                background: "rgba(255, 255, 255, 0.1)",
+                borderRadius: 12,
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                transition: "all 0.3s ease",
+                fontWeight: "bold",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.25)";
+                e.currentTarget.style.transform = "translateX(6px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+                e.currentTarget.style.transform = "translateX(0)";
+              }}
+            >
+              Facebook
+            </a>
+            <a
+              href="https://www.youtube.com/@thinkpinkphoto"
+              style={{
+                color: styles.textColor,
+                textDecoration: "none",
+                fontSize: 18,
+                padding: "12px 24px",
+                background: "rgba(255, 255, 255, 0.1)",
+                borderRadius: 12,
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                transition: "all 0.3s ease",
+                fontWeight: "bold",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.25)";
+                e.currentTarget.style.transform = "translateX(6px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+                e.currentTarget.style.transform = "translateX(0)";
+              }}
+            >
+              YouTube
+            </a>
+            <a
+              href="https://www.thinkpinkstudio.it"
+              style={{
+                color: styles.textColor,
+                textDecoration: "none",
+                fontSize: 18,
+                padding: "12px 24px",
+                background: "rgba(255, 255, 255, 0.1)",
+                borderRadius: 12,
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                transition: "all 0.3s ease",
+                fontWeight: "bold",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.25)";
+                e.currentTarget.style.transform = "translateX(6px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+                e.currentTarget.style.transform = "translateX(0)";
+              }}
+            >
+              Visita il sito
+            </a>
+          </div>
+        </div>
+      </div>
     </AbsoluteFill>
   );
 };
 
-// Clean Business variant - MIGLIORATO
-const CleanOutro = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
 
-  return (
-    <AbsoluteFill style={{
-      background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 40
-    }}>
-          {/* Header */}
-          <Sequence from={0} durationInFrames={40}>
-        <div style={{
-          opacity: interpolate(frame, [0, 30], [0, 1], { extrapolateLeft: 'clamp' }),
-          transform: `translateY(${interpolate(frame, [0, 30], [20, 0], { extrapolateLeft: 'clamp' })}px)`
-        }}>
-          <div style={{
-            fontSize: 36,
-            color: '#2c3e50',
-            fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-            fontWeight: 700,
-            margin: 0,
-            textAlign: 'center'
-          }}>
-            PUNTI DI CONTATTO
-          </div>
-          <div style={{
-            fontSize: 16,
-            color: '#6c757d',
-            fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-            margin: '8px 0 0 0',
-            textAlign: 'center'
-          }}>
-            Scegli il canale che preferisci
-          </div>
-        </div>
-      </Sequence>
-
-          {/* Contatti strutturati */}
-          <Sequence from={40}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 16,
-          marginTop: 30,
-          width: '100%',
-          maxWidth: 700
-        }}>
-          {THINKPINK_LINKS.map((link, index) => (
-            <div key={link.url} style={{
-              opacity: interpolate(frame - 40 - (index * 12), [0, 30], [0, 1], { extrapolateLeft: 'clamp' }),
-              transform: `translateY(${interpolate(frame - 40 - (index * 12), [0, 30], [10, 0], { extrapolateLeft: 'clamp' })}px)`
-            }}>
-              <div style={{
-                backgroundColor: '#ffffff',
-                padding: '16px',
-                borderRadius: '12px',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                border: '1px solid #dee2e6',
-                transition: 'all 0.3s ease'
-              }}>
-                {/* Icona e label */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  marginBottom: 8
-                }}>
-                  <span style={{
-                    width: 10,
-                    height: 10,
-                    backgroundColor: '#667eea',
-                    borderRadius: '50%'
-                  }}></span>
-                  <span style={{
-                    fontSize: 14,
-                    color: '#495057',
-                    fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}>
-                    {link.label === 'Facebook' && 'Facebook'}
-                    {link.label === 'sito Italia' && 'Sito Web'}
-                    {link.label === 'sito Uganda' && 'Website'}
-                    {link.label === 'LinkedIn' && 'LinkedIn'}
-                  </span>
-                </div>
-                
-                {/* URL completo */}
-                <a 
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    fontSize: 16,
-                    color: '#667eea',
-                    fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-                    textDecoration: 'none',
-                    display: 'block',
-                    padding: '8px 0',
-                    borderBottom: '1px solid #e9ecef',
-                    transition: 'color 0.3s ease'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.color = '#5a67d8'}
-                  onMouseOut={(e) => e.currentTarget.style.color = '#667eea'}
-                >
-                  {link.url}
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Sequence>
-
-          {/* QR Code centrale grande */}
-          <Sequence from={120}>
-        <div style={{
-          opacity: interpolate(frame - 120, [0, 50], [0, 1], { extrapolateLeft: 'clamp' }),
-          transform: `scale(${interpolate(frame - 120, [0, 50], [0.5, 1], { extrapolateLeft: 'clamp' })})`,
-          marginTop: 40,
-          padding: 20,
-          backgroundColor: '#ffffff',
-          borderRadius: '16px',
-          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
-          border: '2px solid #dee2e6'
-        }}>
-          <QRCodeSVG
-            value="https://www.thinkpinkstudio.it" 
-            size={450}
-            bgColor="#ffffff"
-            fgColor="#2c3e50"
-          />
-          <div style={{
-            marginTop: 16,
-            fontSize: 18,
-            color: '#2c3e50',
-            fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-            fontWeight: 600,
-            textAlign: 'center'
-          }}>
-            thinkpinkstudio.it
-          </div>
-          <div style={{
-            fontSize: 14,
-            color: '#6c757d',
-            fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif',
-            textAlign: 'center',
-            marginTop: 4
-          }}>
-            Scansiona per visitare il sito
-          </div>
-        </div>
-      </Sequence>
-    </AbsoluteFill>
-  );
-};
-
-export const OutroScene: React.FC<OutroSceneProps> = ({ variant = 'professional' }) => {
-  switch (variant) {
-    case 'minimal':
-      return <MinimalOutro />;
-    case 'clean':
-      return <CleanOutro />;
-    default:
-      return <ProfessionalOutro />;
-  }
-};

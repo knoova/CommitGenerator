@@ -101,6 +101,7 @@ const processCommitOrCombination = async (params: {
       genre: llm.genre,
       myFaceUrl: config.MY_FACE_URL,
       companyLogoUrl: config.COMPANY_LOGO_URL,
+      bannerUrl: config.COMPANY_BANNER,
       audioUrl: music.audioAbsolutePath,
     },
   });
