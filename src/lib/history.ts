@@ -65,6 +65,14 @@ export const appendHistoryRow = async (params: {
 
 export const pushHistoryOnly = async () => {
   await execFileAsync("git", ["add", "HISTORY.md"]);
-  await execFileAsync("git", ["commit", "-m", "docs: update HISTORY.md [skip ci]"]);
+  try {
+    await execFileAsync("git", ["commit", "-m", "docs: update HISTORY.md [skip ci]"]);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/nothing to commit|no changes added to commit/i.test(msg)) {
+      return;
+    }
+    throw err;
+  }
   await execFileAsync("git", ["push"]);
 };
