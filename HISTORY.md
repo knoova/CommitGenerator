@@ -2,6 +2,7 @@
 
 | Data | Autore | Titolo | Release | YouTube | Facebook |
 |------|--------|--------|---------|---------|----------|
+| 2026-03-11 18:37 | @claude | L'Erroria delle OG Image | [v-593f0f4](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-593f0f4) | [YouTube](https://youtu.be/PWAe7hoJkNM) | - |
 | 2026-03-11 17:48 | @knoova | Il Debug Dance | [v-ffbf338](https://github.com/ThinkPinkStudio/html-exercise/releases/tag/v-ffbf338) | [YouTube](https://youtu.be/QWQE1j9t8T4) | - |
 | 2026-03-02 17:27 | @claude | Board Bustling | [v-c4da1a9](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-c4da1a9) | [YouTube](https://youtu.be/bsJaybRv57Y) | - |
 | 2026-03-02 13:54 | @knoova | Il Codice Strepito | [v-e1f890a-1772459669319](https://github.com/ThinkPinkStudio/ThinkPinkStudio/releases/tag/v-e1f890a-1772459669319) | - | - |
