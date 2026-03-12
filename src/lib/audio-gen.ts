@@ -3,131 +3,124 @@ import fs from "fs/promises";
 import path from "path";
 import { execFile } from "child_process";
 import { promisify } from "util";
-import { GoogleAuth } from "google-auth-library";
 import { config } from "@/config";
 import { logError } from "@/lib/logger";
-import { generateVoice } from "@/lib/voice-gen";
 import type { Genre } from "@/remotion/types";
 
 const execFileAsync = promisify(execFile);
 
-// Lyria 2 genera sempre clip da 30 secondi a 48kHz
-const LYRIA_DURATION_SECONDS = 30;
+// MiniMax Music 2.5+ genera sempre clip di ~30-60 secondi con voce cantata
+const GENERATION_TIMEOUT_MS = 180_000; // 3 minuti
 
+// Prompt di stile per genere (in inglese per MiniMax)
 const musicPromptByGenre: Record<Genre, string> = {
-  rock: "energetic rock guitar riff, driving drums, powerful bass, stadium anthem, electric guitar solo, distortion",
-  pop: "catchy pop melody, upbeat synth, cheerful rhythm, dance groove, bright production, modern pop beat",
-  opera: "dramatic orchestral strings, operatic choir, classical grandeur, crescendo, Italian opera, full orchestra",
-  reggaeton: "reggaeton beat, dembow rhythm, latin bass, tropical percussion, urban latin vibes, dancehall groove",
-  "death-metal":
-    "aggressive death metal guitar, blast beat drums, dark heavy distortion, thrash riff, brutal metal, fast tempo",
+  rock: "energetic rock anthem, powerful electric guitar, driving drums, stadium rock, passionate vocals",
+  pop: "catchy upbeat pop, bright synths, dance groove, cheerful melody, modern pop production",
+  opera: "dramatic Italian opera, orchestral strings, operatic soprano, classical grandeur, emotional crescendo",
+  reggaeton: "reggaeton beat, dembow rhythm, latin bass, tropical percussion, urban latin groove",
+  "death-metal": "aggressive death metal, heavy distorted guitar, blast beat drums, intense brutal vocals",
 };
 
-const negativePromptByGenre: Record<Genre, string> = {
-  rock: "slow, ambient, electronic, classical, acoustic",
-  pop: "aggressive, dark, dissonant, slow, heavy",
-  opera: "electronic, drum machines, modern pop, rock guitar",
-  reggaeton: "classical, metal, jazz, opera",
-  "death-metal": "gentle, acoustic, pop, classical, jazz",
+type MiniMaxResponse = {
+  data?: {
+    audio?: string; // hex-encoded MP3
+    status?: number; // 1 = in progress, 2 = completed
+  };
+  base_resp?: {
+    status_code?: number;
+    status_msg?: string;
+  };
 };
 
-type LyriaResponse = {
-  predictions?: Array<{ audioContent?: string }>;
-  error?: { message?: string };
+// Formatta i testi con tag struttura che MiniMax usa per organizzare la canzone.
+// I tag non vengono mostrati nel video (il karaoke usa generatedText originale).
+const formatLyricsForMiniMax = (lyrics: string): string => {
+  const lines = lyrics.split("\n").filter((l) => l.trim());
+  const mid = Math.ceil(lines.length / 2);
+  const verse = lines.slice(0, mid).join("\n");
+  const chorus = lines.slice(mid).join("\n");
+  if (chorus.trim()) {
+    return `[Verse]\n${verse}\n\n[Chorus]\n${chorus}\n\n[Outro]\n${verse.split("\n")[0] ?? ""}`;
+  }
+  return `[Verse]\n${verse}\n\n[Outro]\n${lines[0] ?? ""}`;
 };
 
-// --------------- Instrumental via Google Vertex AI Lyria 2 ---------------
+// --------------- Generazione canzone completa via MiniMax Music 2.5+ ---------------
 
-const generateInstrumental = async (params: {
+const generateSong = async (params: {
   genre: Genre;
-  commitMessage: string;
+  lyrics: string; // testo grezzo dall'LLM (senza tag struttura)
   shortSha: string;
   tempDir: string;
 }): Promise<string> => {
-  const wavPath = path.join(params.tempDir, `${params.shortSha}_instrumental.wav`);
-  const mp3Path = path.join(params.tempDir, `${params.shortSha}_instrumental.mp3`);
+  const mp3Path = path.join(params.tempDir, `${params.shortSha}_song.mp3`);
+  const prompt = musicPromptByGenre[params.genre];
+  const formattedLyrics = formatLyricsForMiniMax(params.lyrics);
 
-  const prompt = `${musicPromptByGenre[params.genre]}, inspired by: ${params.commitMessage.slice(0, 80)}`;
-  const negativePrompt = negativePromptByGenre[params.genre];
+  console.log(`[audio-gen] MiniMax Music 2.5+: genre=${params.genre}, lyrics=${formattedLyrics.length} chars`);
 
-  const { GOOGLE_CLOUD_PROJECT: projectId, GOOGLE_CLOUD_LOCATION: location } = config;
-  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/lyria-002:predict`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), GENERATION_TIMEOUT_MS);
 
-  const auth = new GoogleAuth({
-    scopes: ["https://www.googleapis.com/auth/cloud-platform"],
-  });
-  const client = await auth.getClient();
-  const tokenResponse = await client.getAccessToken();
-  const token = tokenResponse.token;
-  if (!token) throw new Error("Impossibile ottenere il token Google Cloud");
-
-  console.log(`[audio-gen] Chiamata Lyria 2 per genre=${params.genre}...`);
-
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      instances: [{ prompt, negative_prompt: negativePrompt }],
-    }),
-  });
+  let response: Response;
+  try {
+    response = await fetch("https://api.minimax.io/v1/music_generation", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.MINIMAX_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "music-2.5+",
+        lyrics: formattedLyrics,
+        prompt,
+        output_format: "hex",
+        audio_setting: {
+          sample_rate: 44100,
+          bitrate: 256000,
+          format: "mp3",
+        },
+      }),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Lyria 2 API error ${response.status}: ${errorText}`);
+    throw new Error(`MiniMax API error ${response.status}: ${errorText}`);
   }
 
-  const data = (await response.json()) as LyriaResponse;
+  const data = (await response.json()) as MiniMaxResponse;
 
-  if (data.error?.message) {
-    throw new Error(`Lyria 2 API error: ${data.error.message}`);
+  if (data.base_resp?.status_code !== 0) {
+    throw new Error(
+      `MiniMax API error: ${data.base_resp?.status_msg ?? "risposta non valida"} (code ${data.base_resp?.status_code})`,
+    );
   }
 
-  const audioBase64 = data.predictions?.[0]?.audioContent;
-  if (!audioBase64) throw new Error("Lyria 2 non ha restituito audio");
-
-  // Salva il WAV (48kHz, 30s) restituito da Lyria 2
-  const wavBuffer = Buffer.from(audioBase64, "base64");
-  await fs.writeFile(wavPath, wavBuffer);
-  console.log(`[audio-gen] Lyria 2 WAV: ${(wavBuffer.length / 1024).toFixed(0)}KB`);
-
-  // Converti in MP3
-  await execFileAsync("ffmpeg", ["-y", "-i", wavPath, "-q:a", "4", "-acodec", "libmp3lame", mp3Path]);
-  try {
-    await fs.unlink(wavPath);
-  } catch {
-    /* ignore */
+  const hexAudio = data.data?.audio;
+  if (!hexAudio) {
+    throw new Error("MiniMax non ha restituito audio");
   }
 
-  console.log(`[audio-gen] Strumentale generato: ${mp3Path} (${LYRIA_DURATION_SECONDS}s)`);
+  const audioBuffer = Buffer.from(hexAudio, "hex");
+  await fs.writeFile(mp3Path, audioBuffer);
+
+  console.log(`[audio-gen] MiniMax canzone generata: ${mp3Path} (${(audioBuffer.length / 1024).toFixed(0)}KB)`);
   return mp3Path;
 };
 
-// --------------- Mix voce + strumentale ---------------
+// --------------- Trim opzionale per adattare alla durata video ---------------
 
-const mixAudio = async (params: {
-  instrumentalPath: string;
-  voicePath: string;
-  outputPath: string;
-  durationSeconds: number;
-}): Promise<void> => {
+const trimAudio = async (inputPath: string, outputPath: string, durationSeconds: number): Promise<void> => {
   await execFileAsync("ffmpeg", [
     "-y",
-    "-i",
-    params.instrumentalPath,
-    "-i",
-    params.voicePath,
-    "-filter_complex",
-    "[0:a]volume=0.35[m];[1:a]volume=1.0,aformat=sample_rates=44100[v];[m][v]amix=inputs=2:duration=first",
-    "-t",
-    params.durationSeconds.toString(),
-    "-acodec",
-    "libmp3lame",
-    "-q:a",
-    "4",
-    params.outputPath,
+    "-i", inputPath,
+    "-t", durationSeconds.toString(),
+    "-acodec", "copy",
+    outputPath,
   ]);
 };
 
@@ -137,7 +130,7 @@ export const generateAudio = async (params: {
   genre: Genre;
   commitMessage: string;
   commitSha: string;
-  lyrics: string;
+  lyrics: string; // testo con tag struttura [Verse]/[Chorus]
   durationSeconds?: number;
 }): Promise<{ audioAbsolutePath: string }> => {
   const tempDir = path.join(process.cwd(), config.tempDir);
@@ -146,47 +139,32 @@ export const generateAudio = async (params: {
   const shortSha = params.commitSha.slice(0, 7);
   const finalMp3 = path.join(tempDir, `${shortSha}.mp3`);
 
-  // Lyria 2 produce sempre 30s; trimmamo al tempo richiesto (durata video)
-  const durationSeconds = Math.min(params.durationSeconds ?? LYRIA_DURATION_SECONDS, LYRIA_DURATION_SECONDS);
-
-  const [instrumentalPath, voiceResult] = await Promise.all([
-    generateInstrumental({
+  let songPath: string;
+  try {
+    songPath = await generateSong({
       genre: params.genre,
-      commitMessage: params.commitMessage,
+      lyrics: params.lyrics,
       shortSha,
       tempDir,
-    }),
-    generateVoice({
-      lyrics: params.lyrics,
-      genre: params.genre,
+    });
+  } catch (err) {
+    await logError({
+      caller: "generateSong",
       commitSha: params.commitSha,
-      durationSeconds,
-    }).catch(async (err) => {
-      await logError({
-        caller: "generateVoice",
-        commitSha: params.commitSha,
-        commitMessage: params.commitMessage,
-        error: err,
-      });
-      throw err instanceof Error ? err : new Error(String(err));
-    }),
-  ]);
-
-  await mixAudio({
-    instrumentalPath,
-    voicePath: voiceResult.voicePath,
-    outputPath: finalMp3,
-    durationSeconds,
-  });
-
-  for (const tmp of [instrumentalPath, voiceResult.voicePath]) {
-    try {
-      await fs.unlink(tmp);
-    } catch {
-      /* ignore */
-    }
+      commitMessage: params.commitMessage,
+      error: err,
+    });
+    throw err instanceof Error ? err : new Error(String(err));
   }
 
-  console.log(`[audio-gen] Audio finale: ${finalMp3} (${durationSeconds}s)`);
+  // Trim alla durata video se richiesto
+  if (params.durationSeconds && songPath !== finalMp3) {
+    await trimAudio(songPath, finalMp3, params.durationSeconds);
+    try { await fs.unlink(songPath); } catch { /* ignore */ }
+  } else {
+    await fs.rename(songPath, finalMp3);
+  }
+
+  console.log(`[audio-gen] Audio finale: ${finalMp3}`);
   return { audioAbsolutePath: finalMp3 };
 };
