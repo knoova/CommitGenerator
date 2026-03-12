@@ -15,6 +15,14 @@ const envSchema = z.object({
   COMPANY_BANNER: z.string().default("/og-image.png"),
   SOCIAL_POST_BASE_URL: z.string().optional(),
 
+  // MiniMax Music (generazione canzone completa con voce cantata)
+  MINIMAX_API_KEY: z.string().min(1),
+
+  // Google AI / Vertex AI (opzionale, non più usato per audio)
+  GEMINI_API_KEY: z.string().optional(),
+  GOOGLE_CLOUD_PROJECT: z.string().optional(),
+  GOOGLE_CLOUD_LOCATION: z.string().default("us-central1"),
+
   YOUTUBE_ENABLED: boolString,
   YOUTUBE_PRIVACY: z.string().default("unlisted"),
 

@@ -88,7 +88,6 @@ const processCommitOrCombination = async (params: {
     commitMessage,
     commitSha: params.commit.id,
     lyrics: llm.generatedText,
-    durationSeconds: llm.genre === "opera" ? 45 : undefined, // Opera più lunga
   });
 
   const rendered = await renderCommitVideo({

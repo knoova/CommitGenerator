@@ -3,190 +3,134 @@ import fs from "fs/promises";
 import path from "path";
 import { execFile } from "child_process";
 import { promisify } from "util";
-import { WaveFile } from "wavefile";
-import {
-  type MusicgenForConditionalGeneration,
-  AutoTokenizer,
-  MusicgenForConditionalGeneration as MusicgenModel,
-} from "@huggingface/transformers";
 import { config } from "@/config";
 import { logError } from "@/lib/logger";
-import { generateVoice } from "@/lib/voice-gen";
 import type { Genre } from "@/remotion/types";
 
 const execFileAsync = promisify(execFile);
 
-const MODEL_ID = "Xenova/musicgen-small";
-const MODEL_CACHE_DIR = path.join(process.cwd(), ".cache", "models");
-const GENERATION_TIMEOUT_MS = 300_000; // 5 minuti per generare musica più lunga
-const MAX_LOAD_RETRIES = 1;
+// MiniMax Music 2.5+ genera sempre clip di ~30-60 secondi con voce cantata
+const GENERATION_TIMEOUT_MS = 180_000; // 3 minuti
 
+// Prompt di stile per genere (in inglese per MiniMax)
 const musicPromptByGenre: Record<Genre, string> = {
-  rock: "energetic rock guitar riff, driving drums, powerful bass, stadium anthem",
-  pop: "catchy pop melody, upbeat synth, cheerful rhythm, dance groove",
-  opera: "dramatic orchestral strings, operatic choir, classical grandeur, crescendo",
-  reggaeton: "reggaeton beat, dembow rhythm, latin bass, tropical percussion",
-  "death-metal":
-    "aggressive death metal guitar, blast beat drums, dark heavy distortion",
+  rock: "energetic rock anthem, powerful electric guitar, driving drums, stadium rock, passionate vocals",
+  pop: "catchy upbeat pop, bright synths, dance groove, cheerful melody, modern pop production",
+  opera: "dramatic Italian opera, orchestral strings, operatic soprano, classical grandeur, emotional crescendo",
+  reggaeton: "reggaeton beat, dembow rhythm, latin bass, tropical percussion, urban latin groove",
+  "death-metal": "aggressive death metal, heavy distorted guitar, blast beat drums, intense brutal vocals",
 };
 
-// --------------- MusicGen singleton management ---------------
-
-let tokenizerPromise: ReturnType<typeof AutoTokenizer.from_pretrained> | null = null;
-let modelPromise: ReturnType<typeof MusicgenModel.from_pretrained> | null = null;
-
-const resetSingletons = () => {
-  tokenizerPromise = null;
-  modelPromise = null;
+type MiniMaxResponse = {
+  data?: {
+    audio?: string; // hex-encoded MP3
+    status?: number; // 1 = in progress, 2 = completed
+  };
+  base_resp?: {
+    status_code?: number;
+    status_msg?: string;
+  };
 };
 
-const purgeModelCache = async () => {
-  const modelCachePath = path.join(MODEL_CACHE_DIR, MODEL_ID.replace("/", path.sep));
-  try {
-    await fs.rm(modelCachePath, { recursive: true, force: true });
-    console.log(`[audio-gen] Purged corrupt cache at ${modelCachePath}`);
-  } catch {
-    /* directory may not exist */
+// Formatta i testi con tag struttura che MiniMax usa per organizzare la canzone.
+// I tag non vengono mostrati nel video (il karaoke usa generatedText originale).
+const formatLyricsForMiniMax = (lyrics: string): string => {
+  const lines = lyrics.split("\n").filter((l) => l.trim());
+  const mid = Math.ceil(lines.length / 2);
+  const verse = lines.slice(0, mid).join("\n");
+  const chorus = lines.slice(mid).join("\n");
+  if (chorus.trim()) {
+    return `[Verse]\n${verse}\n\n[Chorus]\n${chorus}\n\n[Outro]\n${verse.split("\n")[0] ?? ""}`;
   }
+  return `[Verse]\n${verse}\n\n[Outro]\n${lines[0] ?? ""}`;
 };
 
-const loadTokenizer = () =>
-  AutoTokenizer.from_pretrained(MODEL_ID, {
-    cache_dir: MODEL_CACHE_DIR,
-    progress_callback: (progress: { status: string; file?: string; progress?: number }) => {
-      if (progress.status === "progress" && progress.file) {
-        const pct = typeof progress.progress === "number" ? ` ${Math.round(progress.progress)}%` : "";
-        console.log(`[audio-gen] Downloading tokenizer ${progress.file}${pct}`);
-      }
-    },
-  });
+// --------------- Generazione canzone completa via MiniMax Music 2.5+ ---------------
 
-const loadModel = () =>
-  MusicgenModel.from_pretrained(MODEL_ID, {
-    dtype: "fp32",
-    cache_dir: MODEL_CACHE_DIR,
-    progress_callback: (progress: { status: string; file?: string; progress?: number }) => {
-      if (progress.status === "progress" && progress.file) {
-        const pct = typeof progress.progress === "number" ? ` ${Math.round(progress.progress)}%` : "";
-        console.log(`[audio-gen] Downloading model ${progress.file}${pct}`);
-      }
-    },
-  });
-
-const getTokenizer = () => {
-  if (!tokenizerPromise) tokenizerPromise = loadTokenizer();
-  return tokenizerPromise;
-};
-
-const getModel = () => {
-  if (!modelPromise) modelPromise = loadModel();
-  return modelPromise;
-};
-
-const loadModelsWithRetry = async (): Promise<
-  [Awaited<ReturnType<typeof AutoTokenizer.from_pretrained>>, Awaited<ReturnType<typeof MusicgenModel.from_pretrained>>]
-> => {
-  for (let attempt = 0; attempt <= MAX_LOAD_RETRIES; attempt++) {
-    try {
-      return await Promise.all([getTokenizer(), getModel()]);
-    } catch (err) {
-      if (attempt === MAX_LOAD_RETRIES) throw err;
-      console.warn(
-        `[audio-gen] Model load failed (attempt ${attempt + 1}/${MAX_LOAD_RETRIES + 1}), purging cache...`,
-        err instanceof Error ? err.message : err,
-      );
-      resetSingletons();
-      await purgeModelCache();
-    }
-  }
-  throw new Error("Unreachable");
-};
-
-// --------------- Instrumental generation (MusicGen) ---------------
-
-const generateInstrumental = async (params: {
+const generateSong = async (params: {
   genre: Genre;
-  commitMessage: string;
+  lyrics: string; // testo grezzo dall'LLM (senza tag struttura)
   shortSha: string;
   tempDir: string;
-  durationSeconds: number;
 }): Promise<string> => {
-  const wavPath = path.join(params.tempDir, `${params.shortSha}_instrumental.wav`);
-  const mp3Path = path.join(params.tempDir, `${params.shortSha}_instrumental.mp3`);
+  const mp3Path = path.join(params.tempDir, `${params.shortSha}_song.mp3`);
+  const prompt = musicPromptByGenre[params.genre];
+  const formattedLyrics = formatLyricsForMiniMax(params.lyrics);
 
-  const prompt = `${musicPromptByGenre[params.genre]}, inspired by: ${params.commitMessage.slice(0, 60)}`;
+  console.log(`[audio-gen] MiniMax Music 2.5+: genre=${params.genre}, lyrics=${formattedLyrics.length} chars`);
 
-  const [tokenizer, model] = await loadModelsWithRetry();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), GENERATION_TIMEOUT_MS);
 
-  const inputs = await (
-    tokenizer as (text: string, opts?: { padding?: boolean }) => Promise<object>
-  )(prompt, { padding: true });
+  let response: Response;
+  try {
+    response = await fetch("https://api.minimax.io/v1/music_generation", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.MINIMAX_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "music-2.5+",
+        lyrics: formattedLyrics,
+        prompt,
+        output_format: "hex",
+        audio_setting: {
+          sample_rate: 44100,
+          bitrate: 256000,
+          format: "mp3",
+        },
+      }),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 
-  // Calcolo tokens in modo più conservativo per evitare problemi di memoria
-  const tokensForDuration = calculateTokensForDuration(params.durationSeconds);
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`MiniMax API error ${response.status}: ${errorText}`);
+  }
 
-  console.log(`[audio-gen] Generating ${params.durationSeconds}s music with ${tokensForDuration} tokens...`);
-  
-  const audioValues = await Promise.race([
-    (model as MusicgenForConditionalGeneration).generate({
-      ...inputs,
-      max_new_tokens: tokensForDuration,
-      do_sample: true,
-      guidance_scale: 3,
-    } as Parameters<MusicgenForConditionalGeneration["generate"]>[0]),
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`MusicGen generation timeout after ${GENERATION_TIMEOUT_MS/1000}s`)), GENERATION_TIMEOUT_MS),
-    ),
-  ]);
-  
-  console.log(`[audio-gen] Music generation completed successfully`);
+  const data = (await response.json()) as MiniMaxResponse;
 
-  const samplingRate =
-    (
-      (model as MusicgenForConditionalGeneration).config as {
-        audio_encoder?: { sampling_rate?: number };
-      }
-    )?.audio_encoder?.sampling_rate ?? 32000;
+  if (data.base_resp?.status_code !== 0) {
+    throw new Error(
+      `MiniMax API error: ${data.base_resp?.status_msg ?? "risposta non valida"} (code ${data.base_resp?.status_code})`,
+    );
+  }
 
-  const wav = new WaveFile();
-  wav.fromScratch(1, samplingRate, "32f", Array.from((audioValues as { data: Float32Array }).data));
-  await fs.writeFile(wavPath, Buffer.from(wav.toBuffer()));
+  const hexAudio = data.data?.audio;
+  if (!hexAudio) {
+    throw new Error("MiniMax non ha restituito audio");
+  }
 
-  await execFileAsync("ffmpeg", ["-y", "-i", wavPath, "-q:a", "4", "-acodec", "libmp3lame", mp3Path]);
+  const audioBuffer = Buffer.from(hexAudio, "hex");
+  await fs.writeFile(mp3Path, audioBuffer);
 
-  try { await fs.unlink(wavPath); } catch { /* ignore */ }
-
-  console.log(`[audio-gen] Instrumental generated: ${mp3Path} (${params.durationSeconds}s)`);
+  console.log(`[audio-gen] MiniMax canzone generata: ${mp3Path} (${(audioBuffer.length / 1024).toFixed(0)}KB)`);
   return mp3Path;
 };
 
-// --------------- Mix voice + instrumental ---------------
+// --------------- Trim opzionale per adattare alla durata video ---------------
 
-const mixAudio = async (params: {
-  instrumentalPath: string;
-  voicePath: string;
-  outputPath: string;
-  durationSeconds: number;
-}): Promise<void> => {
+const trimAudio = async (inputPath: string, outputPath: string, durationSeconds: number): Promise<void> => {
   await execFileAsync("ffmpeg", [
     "-y",
-    "-i", params.instrumentalPath,
-    "-i", params.voicePath,
-    "-filter_complex",
-    "[0:a]volume=0.3[m];[1:a]volume=1.0,aformat=sample_rates=44100[v];[m][v]amix=inputs=2:duration=first",
-    "-t", params.durationSeconds.toString(),
-    "-acodec", "libmp3lame", "-q:a", "4",
-    params.outputPath,
+    "-i", inputPath,
+    "-t", durationSeconds.toString(),
+    "-acodec", "copy",
+    outputPath,
   ]);
 };
 
-// --------------- Public API ---------------
+// --------------- API pubblica ---------------
 
 export const generateAudio = async (params: {
   genre: Genre;
   commitMessage: string;
   commitSha: string;
-  lyrics: string;
+  lyrics: string; // testo con tag struttura [Verse]/[Chorus]
   durationSeconds?: number;
 }): Promise<{ audioAbsolutePath: string }> => {
   const tempDir = path.join(process.cwd(), config.tempDir);
@@ -194,29 +138,18 @@ export const generateAudio = async (params: {
 
   const shortSha = params.commitSha.slice(0, 7);
   const finalMp3 = path.join(tempDir, `${shortSha}.mp3`);
-  
-  // Default duration: 30 seconds, or calculate based on lyrics complexity
-  const durationSeconds = params.durationSeconds || calculateOptimalDuration(params.lyrics);
 
-  const instrumentalPath = await generateInstrumental({
-    genre: params.genre,
-    commitMessage: params.commitMessage,
-    shortSha,
-    tempDir,
-    durationSeconds,
-  });
-
-  let voiceResult: { voicePath: string };
+  let songPath: string;
   try {
-    voiceResult = await generateVoice({
-      lyrics: params.lyrics,
+    songPath = await generateSong({
       genre: params.genre,
-      commitSha: params.commitSha,
-      durationSeconds,
+      lyrics: params.lyrics,
+      shortSha,
+      tempDir,
     });
   } catch (err) {
     await logError({
-      caller: "generateVoice",
+      caller: "generateSong",
       commitSha: params.commitSha,
       commitMessage: params.commitMessage,
       error: err,
@@ -224,40 +157,14 @@ export const generateAudio = async (params: {
     throw err instanceof Error ? err : new Error(String(err));
   }
 
-  await mixAudio({
-    instrumentalPath,
-    voicePath: voiceResult.voicePath,
-    outputPath: finalMp3,
-    durationSeconds,
-  });
-
-  for (const tmp of [instrumentalPath, voiceResult.voicePath]) {
-    try { await fs.unlink(tmp); } catch { /* ignore */ }
-  }
-
-  console.log(`[audio-gen] Final audio: ${finalMp3} (${durationSeconds}s)`);
-  return { audioAbsolutePath: finalMp3 };
-};
-
-// Funzione per calcolare la durata ottimale in base ai testi
-const calculateOptimalDuration = (lyrics: string): number => {
-  const wordCount = lyrics.split(/\s+/).length;
-  const charCount = lyrics.length;
-  
-  // Base: 20 secondi per testi standard (ridotto per evitare problemi di memoria)
-  // Aggiungi tempo per testi più lunghi o complessi
-  if (wordCount > 50 || charCount > 300) {
-    return 30; // Testi lunghi: 30 secondi
-  } else if (wordCount > 25 || charCount > 150) {
-    return 25; // Testi medi: 25 secondi
+  // Trim alla durata video se richiesto
+  if (params.durationSeconds && songPath !== finalMp3) {
+    await trimAudio(songPath, finalMp3, params.durationSeconds);
+    try { await fs.unlink(songPath); } catch { /* ignore */ }
   } else {
-    return 20; // Testi brevi: 20 secondi
+    await fs.rename(songPath, finalMp3);
   }
-};
 
-// Funzione per calcolare i tokens in modo più conservativo
-const calculateTokensForDuration = (durationSeconds: number): number => {
-  // Base: 500 tokens per 10 secondi, ma con un massimo per evitare problemi di memoria
-  const baseTokens = Math.floor(500 * (durationSeconds / 10));
-  return Math.min(baseTokens, 1500); // Massimo 1500 tokens per evitare problemi di memoria
+  console.log(`[audio-gen] Audio finale: ${finalMp3}`);
+  return { audioAbsolutePath: finalMp3 };
 };
