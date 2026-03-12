@@ -15,6 +15,11 @@ const envSchema = z.object({
   COMPANY_BANNER: z.string().default("/og-image.png"),
   SOCIAL_POST_BASE_URL: z.string().optional(),
 
+  // Google AI / Vertex AI
+  GEMINI_API_KEY: z.string().min(1),
+  GOOGLE_CLOUD_PROJECT: z.string().min(1),
+  GOOGLE_CLOUD_LOCATION: z.string().default("us-central1"),
+
   YOUTUBE_ENABLED: boolString,
   YOUTUBE_PRIVACY: z.string().default("unlisted"),
 
