@@ -1,10 +1,11 @@
-import { Ollama } from "ollama";
-import { config } from "@/config";
 import type { Genre } from "@/remotion/types";
+import {
+  checkOllamaModelReady,
+  getOllamaClient,
+  getOllamaModel,
+} from "@/lib/ollama-health";
 
 export { THINKPINK_LINKS } from "@/lib/links";
-
-const ollama = new Ollama({ host: config.OLLAMA_HOST || 'http://localhost:11434' });
 
 const genreLabel: Record<Genre, string> = {
   rock: "Rock",
@@ -21,18 +22,14 @@ export async function generateDescriptionCta(params: {
   lyricsSnippet: string;
   targetUrl: string;
 }): Promise<string> {
-  const responseSchema = {
-    type: "object",
-    properties: {
-      cta: {
-        type: "string",
-        description:
-          "1-2 righe comiche per invitarci a visitare il link, max 80 caratteri, tono ironico",
-      },
-    },
-    required: ["cta"],
-    additionalProperties: false,
-  };
+  const health = await checkOllamaModelReady();
+  if (!health.ok) {
+    console.warn(`[description-cta] ${health.reason} — uso CTA statica`);
+    return FALLBACK_CTA;
+  }
+
+  const ollama = getOllamaClient();
+  const model = getOllamaModel();
 
   const prompt = `
 Sei un copywriter comico. La canzone è in stile ${genreLabel[params.genre]}.
@@ -50,7 +47,7 @@ Vincoli:
 
   try {
     const response = await ollama.generate({
-      model: "llama3",
+      model,
       prompt: prompt,
       format: "json",
       options: {

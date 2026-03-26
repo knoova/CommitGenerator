@@ -10,5 +10,6 @@ export const videoPropsSchema = z.object({
   genre: genreSchema,
   myFaceUrl: z.string().min(1),
   companyLogoUrl: z.string().min(1),
+  bannerUrl: z.string().min(1),
   audioUrl: z.string().min(1),
 });

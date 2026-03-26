@@ -1,9 +1,95 @@
 "use server";
 import fs from "fs/promises";
 import path from "path";
+import { z } from "zod";
 import { config } from "@/config";
 
 const GRAPH_API = "https://graph.facebook.com/v22.0";
+
+/** Graph API error envelope (common across endpoints). */
+const facebookGraphErrorSchema = z.object({
+  error: z.object({
+    message: z.string(),
+    type: z.string().optional(),
+    code: z.number().optional(),
+    error_subcode: z.number().optional(),
+    fbtrace_id: z.string().optional(),
+    error_user_title: z.string().optional(),
+    error_user_msg: z.string().optional(),
+  }),
+});
+
+/** Step 1: POST /{app-id}/uploads — https://developers.facebook.com/docs/graph-api/guides/upload */
+const uploadSessionResponseSchema = z.object({
+  id: z.string().min(1),
+});
+
+/** Step 2: POST /upload:{session-id} — success returns file handle `h` */
+const uploadFileHandleResponseSchema = z.object({
+  h: z.string().min(1),
+});
+
+/** Publish video — success returns Graph node id for the video */
+const publishVideoResponseSchema = z.object({
+  id: z.string().min(1),
+});
+
+const truncateForLog = (s: string, max = 800) => (s.length <= max ? s : `${s.slice(0, max)}…`);
+
+const readJsonBody = async (res: Response): Promise<unknown> => {
+  const text = await res.text();
+  if (!text.trim()) {
+    throw new Error("Facebook API returned an empty response body");
+  }
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    throw new Error(`Facebook API returned non-JSON body (${truncateForLog(text)})`);
+  }
+};
+
+const throwIfGraphApiError = (json: unknown): void => {
+  const errParsed = facebookGraphErrorSchema.safeParse(json);
+  if (!errParsed.success) return;
+  const e = errParsed.data.error;
+  const parts = [
+    `Facebook API: ${e.message}`,
+    e.code !== undefined ? `code=${e.code}` : null,
+    e.error_subcode !== undefined ? `subcode=${e.error_subcode}` : null,
+    e.fbtrace_id ? `fbtrace_id=${e.fbtrace_id}` : null,
+  ].filter(Boolean);
+  throw new Error(parts.join(" | "));
+};
+
+/**
+ * Read JSON, surface Graph `error` objects, then validate success shape.
+ * @see https://developers.facebook.com/docs/graph-api/guides/upload
+ */
+const parseFacebookResponse = async <T>(
+  res: Response,
+  successSchema: z.ZodType<T>,
+  context: string,
+): Promise<T> => {
+  const json = await readJsonBody(res);
+  throwIfGraphApiError(json);
+
+  if (!res.ok) {
+    throw new Error(
+      `${context} failed (HTTP ${res.status}): ${truncateForLog(JSON.stringify(json))}`,
+    );
+  }
+
+  const parsed = successSchema.safeParse(json);
+  if (!parsed.success) {
+    const detail = JSON.stringify(z.treeifyError(parsed.error));
+    const raw = truncateForLog(JSON.stringify(json));
+    throw new Error(
+      `${context}: unexpected response shape (${detail}). ` +
+        `Expected fields per Meta Resumable Upload / Video API docs. Raw: ${raw}`,
+    );
+  }
+  return parsed.data;
+};
 
 const startUploadSession = async (params: {
   appId: string;
@@ -25,12 +111,7 @@ const startUploadSession = async (params: {
     }),
   });
 
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`FB upload session failed (${res.status}): ${body}`);
-  }
-
-  const data = (await res.json()) as { id: string };
+  const data = await parseFacebookResponse(res, uploadSessionResponseSchema, "Facebook upload session");
   return data.id;
 };
 
@@ -50,12 +131,7 @@ const uploadFileChunk = async (params: {
     body: params.fileBuffer,
   });
 
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`FB file upload failed (${res.status}): ${body}`);
-  }
-
-  const data = (await res.json()) as { h: string };
+  const data = await parseFacebookResponse(res, uploadFileHandleResponseSchema, "Facebook file upload");
   return data.h;
 };
 
@@ -80,12 +156,7 @@ const publishVideo = async (params: {
     }),
   });
 
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`FB video publish failed (${res.status}): ${body}`);
-  }
-
-  const data = (await res.json()) as { id: string };
+  const data = await parseFacebookResponse(res, publishVideoResponseSchema, "Facebook publish video");
   return data.id;
 };
 

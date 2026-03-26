@@ -3,9 +3,21 @@ import fs from "fs";
 import fsPromises from "fs/promises";
 import path from "path";
 import http from "http";
+import { execFile } from "child_process";
 import { URL } from "url";
 import { google } from "googleapis";
 import { config } from "@/config";
+
+/** Open URL in default browser (macOS, Windows, Linux). */
+const openUrlInBrowser = (url: string): void => {
+  if (process.platform === "win32") {
+    execFile("cmd", ["/c", "start", "", url], { windowsHide: true }, () => undefined);
+  } else if (process.platform === "darwin") {
+    execFile("open", [url], () => undefined);
+  } else {
+    execFile("xdg-open", [url], () => undefined);
+  }
+};
 
 const SCOPES = ["https://www.googleapis.com/auth/youtube.upload"];
 const CLIENT_SECRET_PATH = path.join(process.cwd(), "client_secret.json");
@@ -54,9 +66,11 @@ const getAuthCodeViaLocalServer = (authUrl: string): Promise<string> => {
     });
     server.listen(REDIRECT_PORT, () => {
       console.log(`YouTube OAuth: apri nel browser -> ${authUrl}`);
-      import("child_process").then(({ exec }) => {
-        exec(`open "${authUrl}"`);
-      }).catch(() => { /* manual open */ });
+      try {
+        openUrlInBrowser(authUrl);
+      } catch {
+        /* apri manualmente se fallisce */
+      }
     });
     server.on("error", reject);
     setTimeout(() => { server.close(); reject(new Error("OAuth timeout (120s)")); }, 120_000);

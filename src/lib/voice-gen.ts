@@ -1,9 +1,40 @@
 "use server";
 import fs from "fs/promises";
 import path from "path";
+import { execFile } from "child_process";
+import { promisify } from "util";
 import { WaveFile } from "wavefile";
 import { config } from "@/config";
 import type { Genre } from "@/remotion/types";
+
+const execFileAsync = promisify(execFile);
+
+/**
+ * Allinea la voce a una durata fissa (trim se troppo lunga, silenzio in coda se corta)
+ * e converte a 44.1kHz mono PCM — compatibile con mix ffmpeg tipico (instrumental MP3).
+ */
+const adjustVoiceToDuration = async (
+  inputWav: string,
+  outputWav: string,
+  durationSeconds: number,
+): Promise<void> => {
+  const t = Math.max(0.25, durationSeconds);
+  const tf = t.toFixed(3);
+  await execFileAsync("ffmpeg", [
+    "-y",
+    "-i",
+    inputWav,
+    "-af",
+    `atrim=0:${tf},apad=whole_dur=${tf}`,
+    "-ar",
+    "44100",
+    "-ac",
+    "1",
+    "-c:a",
+    "pcm_s16le",
+    outputWav,
+  ]);
+};
 
 // Istruzioni di stile per genere musicale
 const styleByGenre: Record<Genre, string> = {
@@ -35,6 +66,7 @@ export const generateVoice = async (params: {
   await fs.mkdir(tempDir, { recursive: true });
 
   const shortSha = params.commitSha.slice(0, 7);
+  const rawPath = path.join(tempDir, `${shortSha}_voice_raw.wav`);
   const voicePath = path.join(tempDir, `${shortSha}_voice.wav`);
 
   const style = styleByGenre[params.genre];
@@ -86,11 +118,37 @@ export const generateVoice = async (params: {
 
   const wav = new WaveFile();
   wav.fromScratch(1, 24000, "16", Array.from(int16Data));
-  await fs.writeFile(voicePath, Buffer.from(wav.toBuffer()));
+  await fs.writeFile(rawPath, Buffer.from(wav.toBuffer()));
 
-  console.log(
-    `[voice-gen] Gemini TTS: ${(pcmBuffer.length / 1024).toFixed(0)}KB PCM → WAV, genre=${params.genre}, voice=Aoede`,
-  );
+  const targetDur = params.durationSeconds;
+  if (typeof targetDur === "number" && targetDur > 0 && Number.isFinite(targetDur)) {
+    try {
+      await adjustVoiceToDuration(rawPath, voicePath, targetDur);
+    } finally {
+      try {
+        await fs.unlink(rawPath);
+      } catch {
+        /* ignore */
+      }
+    }
+    console.log(
+      `[voice-gen] Gemini TTS: PCM → WAV normalizzato a ${targetDur.toFixed(2)}s @ 44.1kHz mono, genre=${params.genre}`,
+    );
+  } else {
+    try {
+      await fs.rename(rawPath, voicePath);
+    } catch {
+      await fs.copyFile(rawPath, voicePath);
+      try {
+        await fs.unlink(rawPath);
+      } catch {
+        /* ignore */
+      }
+    }
+    console.log(
+      `[voice-gen] Gemini TTS: ${(pcmBuffer.length / 1024).toFixed(0)}KB PCM → WAV 24kHz, genre=${params.genre}, voice=Aoede (nessun target duration)`,
+    );
+  }
 
   return { voicePath };
 };

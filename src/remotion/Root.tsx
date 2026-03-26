@@ -15,6 +15,7 @@ const defaultProps: VideoProps = {
   genre: "pop",
   myFaceUrl: "/my_face.png",
   companyLogoUrl: "/company_logo.png",
+  bannerUrl: "/og-image.png",
   audioUrl: "/placeholder_music.mp3",
 };
 

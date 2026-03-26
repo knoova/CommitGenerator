@@ -1,9 +1,10 @@
-import { Ollama } from "ollama";
-import { config } from "@/config";
 import { genres, type Genre } from "@/remotion/types";
 import { logError } from "@/lib/logger";
-
-const ollama = new Ollama({ host: config.OLLAMA_HOST || 'http://localhost:11434' });
+import {
+  checkOllamaModelReady,
+  getOllamaClient,
+  getOllamaModel,
+} from "@/lib/ollama-health";
 
 type LlmOutput = {
   genre: Genre;
@@ -30,6 +31,24 @@ const truncateToWordCount = (text: string, maxWords: number): string => {
   return words.slice(0, maxWords).join(" ");
 };
 
+/** Placeholder lyrics/title when Ollama is down or the model is missing. */
+const buildFallbackOutput = (commitMessage: string, genre: Genre): LlmOutput => {
+  const firstLine = commitMessage.split("\n")[0]?.trim().slice(0, 100) || "commit";
+  const raw = [
+    `Commit in stile ${genreLabel[genre]} senza la musa LLM`,
+    `Il messaggio dice così: ${firstLine}`,
+    `Ollama tace ma noi cantiamo lo stesso`,
+    `Build verde o rossa il karaoke non si ferma`,
+    `Shippiamo il video e la CI ci aspetta`,
+    `Fix refactor deploy repeat sempre in pista`,
+  ].join(" ");
+  return {
+    genre,
+    generatedTitle: `Commit ${genreLabel[genre]} (fallback)`,
+    generatedText: truncateToWordCount(raw, 45),
+  };
+};
+
 const throwWithLog = async (
   commitMessage: string,
   commitSha: string,
@@ -50,21 +69,14 @@ export const generateFunnyLyrics = async (
 ): Promise<LlmOutput> => {
   const genre = pickGenre();
 
-  const responseSchema = {
-    type: "object",
-    properties: {
-      title: {
-        type: "string",
-        description: "Titolo ironico breve della canzone",
-      },
-      lyrics: {
-        type: "string",
-        description: "Testo della canzone, esattamente 45 parole, su più righe con a capo",
-      },
-    },
-    required: ["title", "lyrics"],
-    additionalProperties: false,
-  };
+  const health = await checkOllamaModelReady();
+  if (!health.ok) {
+    console.warn(`[llm] ${health.reason} — uso testo fallback per ${commitSha.slice(0, 7)}`);
+    return buildFallbackOutput(commitMessage, genre);
+  }
+
+  const ollama = getOllamaClient();
+  const model = getOllamaModel();
 
   const prompt = `
 Sei un autore comico musicale italiano specializzato in canzoni su commit.
@@ -91,7 +103,7 @@ Ora genera il JSON richiesto:
 
   try {
     const ollamaResponse = await ollama.generate({
-      model: "llama3",
+      model,
       prompt: prompt,
       format: "json",
       options: {

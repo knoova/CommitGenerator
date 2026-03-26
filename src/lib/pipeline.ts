@@ -1,6 +1,9 @@
 "use server";
 import path from "path";
 import { config } from "@/config";
+
+/** Evita pipeline duplicate per lo stesso commit (webhook ritentati / concorrenti). */
+const inFlightCommitShas = new Set<string>();
 import { generateAudio } from "@/lib/audio-gen";
 import { uploadToFacebook } from "@/lib/facebook";
 import { appendHistoryRow, pushHistoryOnly } from "@/lib/history";
@@ -179,17 +182,20 @@ const processCommitOrCombination = async (params: {
   }
 
   const timestamp = new Date().toISOString().replace("T", " ").slice(0, 16);
-  await appendHistoryRow({
-    date: timestamp,
-    author: `@${authorName}`,
-    title: llm.generatedTitle || commitMessage,
-    releaseUrl,
-    tagName,
-    youtubeUrl,
-    facebookUrl,
-  });
-
-  await pushHistoryOnly();
+  try {
+    await appendHistoryRow({
+      date: timestamp,
+      author: `@${authorName}`,
+      title: llm.generatedTitle || commitMessage,
+      releaseUrl,
+      tagName,
+      youtubeUrl,
+      facebookUrl,
+    });
+    await pushHistoryOnly();
+  } catch (historyErr) {
+    console.error("[pipeline] HISTORY.md update/push failed (non blocca release/video):", historyErr);
+  }
 
   return {
     releaseUrl,
@@ -200,6 +206,25 @@ const processCommitOrCombination = async (params: {
 };
 
 export const processCommitPipeline = async ({
+  payload,
+  commit,
+}: {
+  payload: GitHubPushPayload;
+  commit: GitHubCommit;
+}) => {
+  if (inFlightCommitShas.has(commit.id)) {
+    console.warn(`[pipeline] Already processing commit ${commit.id.slice(0, 7)}, skipping duplicate`);
+    return null;
+  }
+  inFlightCommitShas.add(commit.id);
+  try {
+    return await runPipelineForCommit({ payload, commit });
+  } finally {
+    inFlightCommitShas.delete(commit.id);
+  }
+};
+
+const runPipelineForCommit = async ({
   payload,
   commit,
 }: {

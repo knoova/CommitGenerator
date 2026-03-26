@@ -69,7 +69,12 @@ export const pushHistoryOnly = async () => {
     await execFileAsync("git", ["commit", "-m", "docs: update HISTORY.md [skip ci]"]);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (/nothing to commit|no changes added to commit/i.test(msg)) {
+    const stderr =
+      err && typeof err === "object" && "stderr" in err
+        ? String((err as { stderr?: Buffer | string }).stderr ?? "")
+        : "";
+    const combined = `${msg}\n${stderr}`;
+    if (/nothing to commit|no changes added to commit|working tree clean/i.test(combined)) {
       return;
     }
     throw err;
