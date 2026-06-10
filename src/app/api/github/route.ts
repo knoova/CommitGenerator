@@ -38,6 +38,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Invalid JSON payload" }, { status: 400 });
   }
 
+  const repoOwner = payload.repository.full_name.split("/")[0]?.toLowerCase() ?? "";
+  if (config.ALLOWED_OWNERS.length > 0 && !config.ALLOWED_OWNERS.includes(repoOwner)) {
+    console.log(`[webhook] Rejected: ${payload.repository.full_name} (owner not in allowlist)`);
+    return NextResponse.json({ ok: false, error: "Repo owner not allowed" }, { status: 403 });
+  }
+
   const commit = getLatestCommit(payload);
   if (!commit) {
     console.log("No commit found");
