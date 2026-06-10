@@ -133,7 +133,7 @@ const processCommitOrCombination = async (params: {
         generatedText: llm.generatedText,
         authorName,
         authorAvatarUrl,
-        repoFullName: params.payload.repository.full_name || config.GITHUB_REPO,
+        repoFullName: params.payload.repository.full_name,
         videoPath: videoAbsPath,
       }),
     ),
@@ -166,14 +166,14 @@ const processCommitOrCombination = async (params: {
 
   if (releaseResult.ok && (youtubeUrl || facebookUrl)) {
     await settle("Release update with social links", () =>
-      updateGitHubReleaseWithSocialLinks(tagName, params.payload.repository.full_name || config.GITHUB_REPO, {
+      updateGitHubReleaseWithSocialLinks(tagName, params.payload.repository.full_name, {
         commitSha: params.commit.id,
         commitMessage,
         generatedTitle: llm.generatedTitle ?? "",
         generatedText: llm.generatedText,
         authorName,
         authorAvatarUrl,
-        repoFullName: params.payload.repository.full_name || config.GITHUB_REPO,
+        repoFullName: params.payload.repository.full_name,
         videoPath: videoAbsPath,
         youtubeUrl,
         facebookUrl,

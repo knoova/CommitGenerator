@@ -11,7 +11,12 @@ const envSchema = z.object({
   OLLAMA_HOST: z.string().optional(),
   /** Model name for `ollama generate` (e.g. llama3, llama3.2, mistral). Must be pulled locally. */
   OLLAMA_MODEL: z.string().min(1).default("llama3"),
-  GITHUB_REPO: z.string().default("owner/repo-name"),
+  ALLOWED_OWNERS: z
+    .string()
+    .default("")
+    .transform((s) =>
+      s.split(",").map((o) => o.trim().toLowerCase()).filter(Boolean)
+    ),
   MY_FACE_URL: z.string().default("/francesco.jpg"),
   COMPANY_LOGO_URL: z.string().default("/thinkpink-badge-512.png"),
   COMPANY_BANNER: z.string().default("/og-image.png"),
